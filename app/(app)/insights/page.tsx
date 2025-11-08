@@ -11,7 +11,7 @@ export default function InsightsPage() {
             Insights
           </h1>
           <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-            Truth over vibes. Here's where your week actually went.
+            Truth over vibes. Here&apos;s where your week actually went.
           </p>
         </div>
         

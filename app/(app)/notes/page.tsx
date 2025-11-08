@@ -20,7 +20,7 @@ export default function NotesPage() {
           style={{ background: 'var(--bg-surface)' }}
         >
           <p style={{ color: 'var(--text-muted)' }}>
-            Write it down while it's fresh. What worked? What hurt?
+            Write it down while it&apos;s fresh. What worked? What hurt?
           </p>
         </div>
       </div>
