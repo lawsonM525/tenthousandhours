@@ -145,7 +145,7 @@ This checklist captures the current security expectations for the 10,000hours st
 ## Red-team Checklist (Build-time)
 - Attempt to fetch another user’s session by `_id` (expect 404).
 - Insert `<img src=x onerror=alert(1)>` in notes (should render as text).
-- Upload a 50 MB CSV and a formula-injection CSV (`=IMPORTXML("http://...")`) (should reject or neutralize).
+- Upload a 6 MB CSV (just above the 5 MB limit) and a formula-injection CSV (`=IMPORTXML("http://...")`) (should reject or neutralize).
 - Run app offline, kill tab, reopen (session restores safely).
 - Use an export link older than 5 minutes (should be invalid).
 - Send webhook with incorrect signature (should return 401).
