@@ -174,11 +174,11 @@ export default {
 ### Scoped Query Helper
 ```ts
 export const withUserScope = (userId: string) => ({
-  find: <T>(collection: Collection<T>, query: Filter<T>) =>
+  find: <T extends { userId: string }>(collection: Collection<T>, query: Filter<T>) =>
     collection.find({ ...query, userId }),
-  findOne: <T>(collection: Collection<T>, query: Filter<T>) =>
+  findOne: <T extends { userId: string }>(collection: Collection<T>, query: Filter<T>) =>
     collection.findOne({ ...query, userId }),
-  updateOne: <T>(collection: Collection<T>, query: Filter<T>, update: UpdateFilter<T>) =>
+  updateOne: <T extends { userId: string }>(collection: Collection<T>, query: Filter<T>, update: UpdateFilter<T>) =>
     collection.updateOne({ ...query, userId }, update),
 });
 ```
