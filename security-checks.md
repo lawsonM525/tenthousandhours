@@ -90,7 +90,7 @@ This checklist captures the current security expectations for the 10,000hours st
 
 ## Offline & Device Security
 - IndexedDB: store minimal session buffers and pending writes only.
-- Offer optional local encryption for notes via user passphrase (derive with Argon2; keep key in memory).
+- Offer optional local encryption for notes via user passphrase (derive with Argon2id, PBKDF2-SHA256, or scrypt; keep key in memory).
 - Provide a "don’t keep data offline" setting for shared devices.
 - Optional screen lock (biometric/passcode) for mobile app access.
 
