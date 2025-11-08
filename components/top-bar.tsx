@@ -1,3 +1,5 @@
+"use client";
+
 import { CalendarDays, Search, Sparkles } from "lucide-react";
 import QuickAdd from "./quick-add";
 
