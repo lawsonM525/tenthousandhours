@@ -71,10 +71,178 @@ Collections:
 
 Indexes prioritize 24h coverage queries (e.g., `sessions` compound index on `userId + day`), and TTL indices clean up stale offline drafts.
 
-### Analytics Store
-- **MongoDB Time Series collections** (e.g., `session_metrics_daily`, `session_metrics_weekly`) store compressed buckets keyed by user and period, enabling efficient date-range queries.
-- Aggregation pipelines ($match, $project, $dateTrunc, $group, $bucket, $facet, $setWindowFields) compute metrics such as pace-to-10k, rolling averages, and category heatmaps directly within MongoDB.
-- Materialized summaries maintained via `$merge` targets (triggered by change streams or scheduled cron jobs) keep daily/weekly/monthly totals ready for dashboards while writes remain modest.
+### Mongo-Only Analytics Plan
+
+The analytics architecture uses MongoDB exclusively, leveraging time-series collections, materialized summaries, and aggregation pipelines to power all dashboards and insights without requiring a separate data warehouse.
+
+#### 1. Time-Series Collection for Sessions
+
+Sessions are stored in a time-series collection for efficient range queries and automatic bucketing:
+
+```javascript
+// create as time-series for efficient range queries
+db.createCollection("sessions", {
+  timeseries: {
+    timeField: "start",
+    metaField: "meta",
+    granularity: "minutes"
+  }
+})
+```
+
+**Document shape:**
+```javascript
+{
+  userId,                       // duplicate in meta for efficient filtering
+  categoryId,
+  title,                        // "website fix"
+  start, end,                   // ISODate
+  durationMin,                  // store computed minutes
+  quality,                      // 1..5 (optional)
+  tags: ["coding","web"],
+  meta: { userId, categoryId }, // time-series meta
+  createdAt, updatedAt
+}
+```
+
+**Indexes (besides TS bucketing):**
+```javascript
+db.sessions.createIndex({ userId: 1, start: 1 })
+db.sessions.createIndex({ userId: 1, categoryId: 1, start: 1 })
+```
+
+#### 2. Materialized Summaries (Cheap, Fast Dashboards)
+
+Keep raw events and small rollup collections you refresh incrementally:
+- `summaries_day`: one doc per user per day with totalsByCategory, unassignedMin, qualityStats…
+- `summaries_week`, `summaries_month`: same idea.
+
+**Incremental update flow:**
+
+On insert/update/delete to sessions, a Change Stream or scheduled cron runs an aggregation for the affected day/week and writes back with `$merge`. This keeps dashboards snappy without full scans.
+
+```javascript
+// recompute a single day for a user
+db.sessions.aggregate([
+  {$match: { userId, start: { $gte: dayStart, $lt: dayEnd } }},
+  {$group: {
+    _id: "$categoryId",
+    minutes: { $sum: "$durationMin" },
+    qSum:    { $sum: { $multiply: ["$durationMin", "$quality"] } },
+    qCount:  { $sum: { $cond: [{$ifNull:["$quality",false]}, 1, 0] } }
+  }},
+  {$project: { categoryId: "$_id", minutes: 1, avgQuality: {
+    $cond: [{$gt:["$qCount",0]}, {$divide:["$qSum","$qCount"]}, null]
+  }}},
+  {$group: {
+    _id: null,
+    byCategory: { $push: { k: {$toString:"$categoryId"}, v: "$minutes" } },
+    total: { $sum: "$minutes" }
+  }},
+  {$project: {
+    _id: 0,
+    userId,
+    day: dayStart,
+    totalsByCategory: { $arrayToObject: "$byCategory" },
+    totalMinutes: "$total",
+    unassignedMin: { $max: [0, 1440 - "$total"] }
+  }},
+  {$merge: { into: "summaries_day", on: ["userId", "day"], whenMatched:"replace", whenNotMatched:"insert" }}
+])
+```
+
+#### 3. Queries That Power Your Charts
+
+**Stacked bar: minutes by category per day (range)**
+```javascript
+db.sessions.aggregate([
+  {$match:{ userId, start:{ $gte: from, $lt: to }}},
+  {$project:{
+    categoryId:1,
+    minutes:"$durationMin",
+    day:{ $dateTrunc:{ date:"$start", unit:"day", timezone: tz }}
+  }},
+  {$group:{ _id:{day:"$day", cat:"$categoryId"}, minutes:{ $sum:"$minutes" }}},
+  {$group:{
+    _id:"$_id.day",
+    pairs:{ $push:{ k:{ $toString:"$_id.cat" }, v:"$minutes" } }
+  }},
+  {$project:{ day:"$_id", byCategory:{ $arrayToObject:"$pairs" }, _id:0 }},
+  {$sort:{ day:1 }}
+])
+```
+
+**Heatmap: minutes by hour-of-day × category**
+```javascript
+db.sessions.aggregate([
+  {$match:{ userId, start:{ $gte: from, $lt: to }}},
+  {$project:{
+    categoryId:1,
+    minutes:"$durationMin",
+    hod:{ $hour: { date:"$start", timezone: tz } }
+  }},
+  {$group:{ _id:{ h:"$hod", cat:"$categoryId" }, minutes:{ $sum:"$minutes" }}},
+  {$project:{ hour:"$_id.h", categoryId:"$_id.cat", minutes:1, _id:0 }},
+  {$sort:{ hour:1 }}
+])
+```
+
+**Rolling average (8-week pace) with window functions**
+```javascript
+db.summaries_week.aggregate([
+  {$match:{ userId, categoryId }},
+  {$set:{ weekStart:{ $dateTrunc: { date:"$weekStart", unit:"week", timezone: tz }}}},
+  {$setWindowFields:{
+    sortBy:{ weekStart:1 },
+    output:{
+      rollingAvgMin:{ $avg:"$minutes", window:{ range:[-7,0], unit:"week" } }
+    }
+  }},
+  {$project:{ weekStart:1, rollingAvgHours:{ $divide:["$rollingAvgMin",60] } }}
+])
+```
+
+**10,000-hour progress (quality-weighted)**
+```javascript
+db.sessions.aggregate([
+  {$match:{ userId, categoryId }},
+  {$project:{ qmins:{ $multiply:["$durationMin", { $divide:["$quality",5] }] }}},
+  {$group:{ _id:null, totalQMin:{ $sum:"$qmins" }}},
+  {$project:{ hoursToDate:{ $divide:["$totalQMin",60] } }}
+])
+```
+
+#### 4. Atlas Extras You Can Use (Optional)
+
+- **Atlas SQL**: run SQL over your Mongo data for Tableau/BI without moving it.
+- **Data Federation / Data Lake**: query cold historical data in S3 + live Atlas in one shot.
+- **Atlas Triggers**: serverless change-stream jobs if you don't want your own worker.
+
+#### Schema Tips That Make Analytics Painless
+
+- Store `durationMin` at write time (don't recompute on every read).
+- Keep a `meta` object for time-series with userId/categoryId duplicated.
+- UTC in storage, render in timezone with `$dateTrunc` using timezone.
+- Don't over-normalize; small duplications (category name/color) in summaries save joins.
+- Cap your chart windows (e.g., 180 days) and lazy-load longer ranges.
+- Precompute `unassignedMin` in daily summaries so the "truth gaps" are instant.
+
+#### Mongo or Postgres?
+
+**Mongo-only** (recommended): Least friction, perfect for time-block logs + rollups, rich aggregations, easy real-time updates with change streams. Do this now.
+
+**Postgres instead of Mongo**: Also viable, but you'll end up building very similar summaries and window queries; you lose native time-series bucketing and document flexibility you liked.
+
+**Two databases**: Save this for later, if you prove you need heavy columnar analytics or broad SQL BI for teams.
+
+#### Quick Next Steps
+
+1. Create `sessions` as time-series; write with `durationMin`.
+2. Build `summaries_day`/`week`/`month` + a tiny worker to recompute affected windows on changes.
+3. Wire the charts to summaries first; fall back to on-the-fly aggs for ad-hoc ranges.
+4. Add a single "pace to 10k" endpoint that reads rolling averages from summaries.
+
+Stay with Mongo, ship faster, and keep life un-messy. If you ever outgrow it, bolt on a read-only warehouse later without rewriting your app.
 
 ### Offline Support
 - IndexedDB (via `idb-keyval`) caches the last 30 days of sessions and category metadata, satisfying the plan’s offline logging requirement. Sync workers reconcile pending changes when connectivity returns.
