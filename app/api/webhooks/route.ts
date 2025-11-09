@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server"
-import { Webhook } from "svix"
 import { WebhookEvent, clerkClient } from "@clerk/nextjs/server"
 import { createUser, updateUser, deleteUser } from "@/lib/actions/user.actions"
 
 export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+
+export async function GET() {
+  return new Response("OK")
+}
 
 export async function POST(req: Request) {
   const SIGNING_SECRET = process.env.SIGNING_SECRET
@@ -20,6 +25,7 @@ export async function POST(req: Request) {
     return new Response("Missing Svix headers", { status: 400 })
   }
 
+  const { Webhook } = await import("svix")
   const wh = new Webhook(SIGNING_SECRET)
   let evt: WebhookEvent
   try {
