@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0b0d10;
+  --foreground: #e9edf1;
+  --surface: #111418;
+  --surface-elevated: #151a1f;
+  --muted: #6b7684;
+  --border: #1d232b;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+}
+
+a:hover {
+  color: #f11d75;
+}
+
+::selection {
+  background: rgba(241, 29, 117, 0.3);
+  color: var(--foreground);
+}
+
+.gradient-ring {
+  background: radial-gradient(circle at 40% 40%, rgba(241, 29, 117, 0.18), rgba(11, 13, 16, 0) 65%),
+    radial-gradient(circle at 60% 60%, rgba(58, 141, 255, 0.14), rgba(11, 13, 16, 0) 70%);
+}
+
+.glow-shadow {
+  box-shadow: 0 0 80px rgba(241, 29, 117, 0.18);
+}
+
+.card-surface {
+  background: var(--surface);
+  border-radius: 18px;
+  border: 1px solid rgba(29, 35, 43, 0.8);
+}
+
+.card-elevated {
+  background: var(--surface-elevated);
+  border-radius: 18px;
+  border: 1px solid rgba(29, 35, 43, 0.9);
+}
+
+.section-grid {
+  display: grid;
+  gap: 2.5rem;
+}
+
+@media (min-width: 1024px) {
+  .section-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+  }
+}
