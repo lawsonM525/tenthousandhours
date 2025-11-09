@@ -14,11 +14,9 @@ This file provides guidance to WARP (warp.dev) when working with code in this re
 
 ## Development Commands
 
-This is an **early-stage project** with documentation but minimal implementation. The project structure is being set up.
-
-### Project Setup (Expected)
+### Setup
 ```bash
-# Install dependencies (when package.json exists)
+# Install dependencies
 npm install
 # or
 pnpm install
@@ -29,18 +27,105 @@ npm run dev
 # Build for production
 npm run build
 
+# Start production server
+npm start
+
 # Type checking
 npm run type-check
-# or
-npx tsc --noEmit
 
 # Linting
 npm run lint
 
-# Testing (when configured)
+# Testing
 npm run test          # Unit tests with Vitest
 npm run test:e2e      # E2E tests with Playwright
 ```
+
+### Environment Variables
+
+Create a `.env.local` file with:
+```bash
+# MongoDB (not yet implemented)
+MONGDB_URI=mongodb+srv://...
+
+# Clerk Authentication (not yet implemented)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+
+# OpenAI (not yet implemented)
+OPENAI_API_KEY=sk-...
+```
+
+## Current Implementation Status
+
+### ✅ Fully Implemented
+
+**Core Infrastructure:**
+- Next.js 15 with App Router and TypeScript
+- Tailwind CSS with complete dark theme design tokens
+- All design system colors, typography, spacing, and animations configured
+- ESLint and PostCSS configuration
+
+**UI Components (`components/ui/`):**
+- `Button` - Primary, secondary, ghost variants with proper hover/active states
+- `CategoryChip` - Color dot + label with active state and 8 accent colors
+- `Input` - Text input with focus states and proper styling
+- `Label` - Form labels
+- `Dialog` - Modal system with overlay, header, content areas
+
+**Utilities (`lib/`):**
+- `utils.ts` - cn() helper, CATEGORY_COLORS constant, CategoryColor type
+- `types.ts` - Complete TypeScript interfaces (Category, Session, Note, Summary, User)
+- `schemas.ts` - Zod validation schemas for all entities
+
+**Pages (Functional UI):**
+- `/` - Landing page with hero, CTA, and feature cards
+- `/app/now` - Timer page with category selector, activity input, start/pause/stop controls, mock suggestions
+- `/app/categories` - Category management with add dialog, color picker (8 colors), type selector, mastery toggle
+- `/app/timeline` - Empty state placeholder
+- `/app/insights` - Empty state placeholder with proper microcopy
+- `/app/notes` - Empty state placeholder
+- `/app/settings` - Empty state placeholder
+
+**App Shell:**
+- Desktop: Left sidebar navigation with 6 nav items (now, timeline, insights, notes, categories, settings)
+- Mobile: Bottom navigation bar (5 items)
+- Active state highlighting with pink accent
+- Proper responsive layout (lg breakpoint at 1024px)
+
+### ⏳ Not Yet Implemented
+
+**Backend/Database:**
+- MongoDB connection and database utilities
+- API routes for sessions, categories, notes, insights
+- Clerk authentication integration
+- Middleware for protected routes
+
+**State Management:**
+- React Query setup and providers
+- Zustand store for timer state
+- Actual timer logic (currently mock state)
+
+**Features:**
+- Real category CRUD operations (currently hardcoded)
+- Session creation, editing, deletion
+- Timeline day/week views with draggable blocks
+- Notes editor and linking to sessions
+- Quality ratings (1-5 stars)
+- Mastery tracking calculations
+- AI-powered summaries
+- Charts and visualizations (ECharts/Recharts)
+- Data export (CSV/JSON)
+- Keyboard shortcuts (S, P, N, [, ], ⌘K)
+
+**Additional Components Needed:**
+- TimerDial (canvas/SVG with numeric fallback)
+- TimeBlock (draggable/resizable)
+- TimelineGrid (24-hour or 7-day)
+- SessionEditorSheet (side panel)
+- NoteComposer and NoteCard
+- InsightCard, StackedBarChart, RadialProgress
+- AIInsightTile
 
 ## Tech Stack
 
