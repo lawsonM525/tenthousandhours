@@ -7,6 +7,12 @@
     @apply border-border-subtle;
   }
   
+  :root {
+    --background: #0B0D10;
+    --surface-elevated: #151A1F;
+    --muted: rgba(255, 255, 255, 0.65);
+  }
+
   body {
     @apply bg-bg-base text-text-primary;
     font-feature-settings: "rlig" 1, "calt" 1;
@@ -23,6 +29,12 @@
       scroll-behavior: auto !important;
     }
   }
+}
+
+@layer components {
+  .section-grid { @apply mx-auto grid w-full max-w-6xl items-start gap-10 md:grid-cols-2; }
+  .card-elevated { @apply rounded-2xl border border-white/10 bg-[rgba(17,20,24,0.9)]; }
+  .gradient-ring { background: radial-gradient(circle at center, rgba(241,29,117,0.12), rgba(11,13,16,0) 60%); }
 }
 
 @layer utilities {
