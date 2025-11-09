@@ -46,7 +46,7 @@ export function InsightOverview() {
           A weekly review that connects notes, focus, and the pace to 10,000 hours.
         </h2>
         <p className="max-w-xl text-base text-white/70">
-          Every session rolls into rich analytics. Spot trends by category, surface unlogged time, and get AI nudges on how to
+          Every session rolls into rich analytics. Spot trends by category, surface unlogged time, and see pacing tips on how to
           close the gap between where you are and where mastery lives.
         </p>
         <div className="flex flex-wrap gap-3 text-sm text-white/60" id="principles">

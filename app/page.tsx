@@ -6,6 +6,8 @@ import { InsightOverview } from "@/components/insight-overview";
 import { Navigation } from "@/components/navigation";
 import { TimelineShowcase } from "@/components/timeline-showcase";
 import { InsightChartCard } from "@/components/insight-chart-card";
+import Link from "next/link";
+import { SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs";
 
 const heroHighlights = [
   {
@@ -44,18 +46,30 @@ export default function Home() {
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <a
-                href="#get-started"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#F11D75] px-6 py-3 text-sm font-semibold text-white shadow-[0_0_30px_rgba(241,29,117,0.35)] transition hover:bg-[#ff2a86]"
-              >
-                Start free
-              </a>
-              <a
-                href="#product"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 px-6 py-3 text-sm font-medium text-white/80 transition hover:text-white"
-              >
-                See the product
-              </a>
+              <SignedOut>
+                <SignUpButton mode="modal">
+                  <button className="inline-flex items-center justify-center gap-2 rounded-full bg-[#F11D75] px-6 py-3 text-sm font-semibold text-white shadow-[0_0_30px_rgba(241,29,117,0.35)] transition hover:bg-[#ff2a86]">
+                    Start free
+                  </button>
+                </SignUpButton>
+                <a
+                  href="#product"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 px-6 py-3 text-sm font-medium text-white/80 transition hover:text-white"
+                >
+                  See the product
+                </a>
+              </SignedOut>
+              <SignedIn>
+                <Link href="/app/now" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#F11D75] px-6 py-3 text-sm font-semibold text-white shadow-[0_0_30px_rgba(241,29,117,0.35)] transition hover:bg-[#ff2a86]">
+                  Start now
+                </Link>
+                <Link
+                  href="/app/now"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 px-6 py-3 text-sm font-medium text-white/80 transition hover:text-white"
+                >
+                  See the product
+                </Link>
+              </SignedIn>
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
               {heroHighlights.map((highlight) => (

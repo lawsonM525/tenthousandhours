@@ -5,25 +5,34 @@ interface CategoryChipProps extends React.HTMLAttributes<HTMLDivElement> {
   color: CategoryColor
   label: string
   active?: boolean
+  variant?: "outline" | "solid"
 }
 
 export const CategoryChip = React.forwardRef<HTMLDivElement, CategoryChipProps>(
-  ({ color, label, active = false, className, ...props }, ref) => {
+  ({ color, label, active = false, variant = "outline", className, ...props }, ref) => {
     const hexColor = CATEGORY_COLORS[color]
     
     return (
       <div
         ref={ref}
         className={cn(
-          "inline-flex items-center gap-2 px-3 py-1.5 rounded-pill bg-bg-surface border transition-colors duration-150",
-          active 
-            ? "border-opacity-100" 
-            : "border-opacity-30 hover:border-opacity-50",
+          "inline-flex items-center gap-2 px-3 py-1.5 rounded-pill border transition-colors duration-150",
+          variant === "solid" ? undefined : "bg-bg-surface",
+          variant === "solid"
+            ? "border-transparent"
+            : active
+              ? "border-opacity-100"
+              : "border-opacity-30 hover:border-opacity-50",
           className
         )}
         style={{
-          borderColor: hexColor,
-          backgroundColor: active ? `${hexColor}15` : undefined,
+          borderColor: variant === "solid" ? "transparent" : hexColor,
+          backgroundColor:
+            variant === "solid"
+              ? `${hexColor}26`
+              : active
+                ? `${hexColor}26`
+                : undefined,
         }}
         {...props}
       >
@@ -38,3 +47,4 @@ export const CategoryChip = React.forwardRef<HTMLDivElement, CategoryChipProps>(
 )
 
 CategoryChip.displayName = "CategoryChip"
+

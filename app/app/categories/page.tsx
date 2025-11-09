@@ -89,7 +89,7 @@ export default function CategoriesPage() {
                   <button
                     key={option.value}
                     onClick={() => setSelectedColor(option.value)}
-                    className={`w-10 h-10 rounded-full transition-all duration-150 ${
+                    className={`w-7 h-7 rounded-full transition-all duration-150 ${
                       selectedColor === option.value
                         ? "ring-2 ring-text-primary ring-offset-2 ring-offset-bg-elevated"
                         : "hover:scale-110"

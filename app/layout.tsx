@@ -1,5 +1,7 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
+import Script from "next/script"
+import { ClerkProvider } from "@clerk/nextjs"
 import "./globals.css"
 
 const inter = Inter({ 
@@ -19,10 +21,18 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.variable} font-sans antialiased`}>
-        {children}
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" className="dark">
+        <body className={`${inter.variable} font-sans antialiased`}>
+          <Script
+            src="https://datafa.st/js/script.js"
+            strategy="afterInteractive"
+            data-website-id="dfid_hMYrw2fT8ZNP0VAhdaiDj"
+            data-domain="tenthousandhours.app"
+          />
+          {children}
+        </body>
+      </html>
+    </ClerkProvider>
   )
 }

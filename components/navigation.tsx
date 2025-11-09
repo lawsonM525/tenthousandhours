@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { Menu } from "lucide-react";
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 
 const navigation = [
   { name: "Product", href: "#product" },
@@ -29,18 +32,21 @@ export function Navigation() {
           ))}
         </nav>
         <div className="hidden items-center gap-3 md:flex">
-          <Link
-            href="#"
-            className="rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-white/80 transition hover:text-white"
-          >
-            Log in
-          </Link>
-          <Link
-            href="#get-started"
-            className="rounded-full bg-[#F11D75] px-4 py-2 text-sm font-semibold text-white shadow-[0_0_20px_rgba(241,29,117,0.35)] transition hover:bg-[#ff2a86]"
-          >
-            Start free
-          </Link>
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button className="rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-white/80 transition hover:text-white">
+                Log in
+              </button>
+            </SignInButton>
+            <SignUpButton mode="modal">
+              <button className="rounded-full bg-[#F11D75] px-4 py-2 text-sm font-semibold text-white shadow-[0_0_20px_rgba(241,29,117,0.35)] transition hover:bg-[#ff2a86]">
+                Start free
+              </button>
+            </SignUpButton>
+          </SignedOut>
+          <SignedIn>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
         </div>
         <button className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white md:hidden">
           <Menu className="h-5 w-5" />
@@ -50,3 +56,4 @@ export function Navigation() {
     </header>
   );
 }
+
