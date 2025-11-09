@@ -24,12 +24,12 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en" className="dark">
         <body className={`${inter.variable} font-sans antialiased`}>
-          <Script
-            src="https://datafa.st/js/script.js"
-            strategy="afterInteractive"
+          <script
+            defer
             data-website-id="dfid_hMYrw2fT8ZNP0VAhdaiDj"
             data-domain="tenthousandhours.app"
-          />
+            src="https://datafa.st/js/script.js">
+          </script>
           {children}
         </body>
       </html>
