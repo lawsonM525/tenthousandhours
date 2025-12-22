@@ -1,4 +1,5 @@
 import { CategoryColor } from './utils'
+export type { CategoryColor }
 
 export type CategoryType = 'skill' | 'life' | 'admin' | 'social' | 'other'
 

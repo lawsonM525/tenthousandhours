@@ -2,6 +2,8 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import Script from "next/script"
 import { ClerkProvider } from "@clerk/nextjs"
+import { Providers } from "@/components/providers"
+import { SimpleToastProvider } from "@/components/ui/simple-toast"
 import "./globals.css"
 
 const inter = Inter({ 
@@ -32,7 +34,11 @@ export default function RootLayout({
           </script>
         </head>
         <body className={`${inter.variable} font-sans antialiased`}>
-          {children}
+          <Providers>
+            <SimpleToastProvider>
+              {children}
+            </SimpleToastProvider>
+          </Providers>
         </body>
       </html>
     </ClerkProvider>

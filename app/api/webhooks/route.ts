@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server"
 import { WebhookEvent, clerkClient } from "@clerk/nextjs/server"
+import { headers } from "next/headers"
 import { createUser, updateUser, deleteUser } from "@/lib/actions/user.actions"
-
-export const runtime = "nodejs"
-export const dynamic = "force-dynamic"
-export const revalidate = 0
 
 export async function GET() {
   return new Response("OK")
@@ -16,16 +13,18 @@ export async function POST(req: Request) {
     return new Response("Missing SIGNING_SECRET", { status: 500 })
   }
 
+  const { Webhook } = await import("svix")
+
   const body = await req.text()
-  const svix_id = req.headers.get("svix-id")
-  const svix_timestamp = req.headers.get("svix-timestamp")
-  const svix_signature = req.headers.get("svix-signature")
+  const headerPayload = await headers()
+  const svix_id = headerPayload.get("svix-id")
+  const svix_timestamp = headerPayload.get("svix-timestamp")
+  const svix_signature = headerPayload.get("svix-signature")
 
   if (!svix_id || !svix_timestamp || !svix_signature) {
     return new Response("Missing Svix headers", { status: 400 })
   }
 
-  const { Webhook } = await import("svix")
   const wh = new Webhook(SIGNING_SECRET)
   let evt: WebhookEvent
   try {

@@ -11,9 +11,11 @@ const buttonVariants = cva(
         primary: "bg-cta-pink text-white hover:bg-[#d91865] active:bg-[#c01559]",
         secondary: "bg-bg-surface text-text-primary border border-border-subtle hover:bg-bg-elevated",
         ghost: "bg-transparent text-text-primary hover:bg-bg-surface",
+        outline: "border border-border-subtle bg-transparent text-text-primary hover:bg-bg-surface",
       },
       size: {
         default: "h-10 px-4 py-2",
+        sm: "h-8 px-3 py-1.5 text-sm",
         lg: "h-12 px-6 py-3",
         icon: "h-10 w-10",
       },
