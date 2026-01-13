@@ -53,7 +53,7 @@ export default function NotesPage() {
         date: new Date(session.start),
         duration: session.durationMin || 0
       }
-    }).filter(Boolean)
+    }).filter((info): info is NonNullable<typeof info> => info !== null)
     
     return sessionInfos
   }
