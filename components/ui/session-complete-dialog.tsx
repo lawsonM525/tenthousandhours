@@ -97,7 +97,7 @@ export function SessionCompleteDialog({
         <DialogHeader>
           <DialogTitle>Session Complete!</DialogTitle>
           <DialogDescription>
-            You focused on "{session.title}" for {Math.round(session.durationMin)} minutes
+            You focused on &ldquo;{session.title}&rdquo; for {Math.round(session.durationMin)} minutes
           </DialogDescription>
         </DialogHeader>
 
