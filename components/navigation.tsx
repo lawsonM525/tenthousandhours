@@ -31,15 +31,15 @@ export function Navigation() {
             </Link>
           ))}
         </nav>
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="flex items-center gap-3">
           <SignedOut>
             <SignInButton mode="modal">
-              <button className="rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-white/80 transition hover:text-white">
+              <button className="rounded-full border border-white/10 px-3 py-1.5 text-xs font-medium text-white/80 transition hover:text-white sm:px-4 sm:py-2 sm:text-sm">
                 Log in
               </button>
             </SignInButton>
             <SignUpButton mode="modal">
-              <button className="rounded-full bg-[#F11D75] px-4 py-2 text-sm font-semibold text-white shadow-[0_0_20px_rgba(241,29,117,0.35)] transition hover:bg-[#ff2a86]">
+              <button className="rounded-full bg-[#F11D75] px-3 py-1.5 text-xs font-semibold text-white shadow-[0_0_20px_rgba(241,29,117,0.35)] transition hover:bg-[#ff2a86] sm:px-4 sm:py-2 sm:text-sm">
                 Start free
               </button>
             </SignUpButton>
@@ -48,10 +48,6 @@ export function Navigation() {
             <UserButton afterSignOutUrl="/" />
           </SignedIn>
         </div>
-        <button className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white md:hidden">
-          <Menu className="h-5 w-5" />
-          <span className="sr-only">Open navigation</span>
-        </button>
       </div>
     </header>
   );

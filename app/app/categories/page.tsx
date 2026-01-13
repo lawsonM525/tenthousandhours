@@ -171,12 +171,7 @@ export default function CategoriesPage() {
             ))
           )}
         </div>
-
-        <div className="max-w-4xl mx-auto mt-8 p-4 bg-bg-surface border border-border-subtle rounded-component">
-          <p className="text-label text-text-secondary">
-            pick colors that read well on dark. you can change anytime.
-          </p>
-        </div>
+ 
       </div>
 
       {/* Add Category Dialog */}

@@ -4,7 +4,8 @@ import { Play, Pause, Square, RotateCcw } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { useActiveSession, useCreateSession, useUpdateSession } from '@/lib/hooks/use-sessions'
-import { CategoryColor } from '@/lib/types'
+import { CategoryColor, Session } from '@/lib/types'
+import { SessionCompleteDialog } from './session-complete-dialog'
 
 interface CountdownTimerProps {
   categoryId: string
@@ -30,6 +31,8 @@ export default function CountdownTimer({
   const [isRunning, setIsRunning] = useState(false)
   const [isOvertime, setIsOvertime] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const [showCompleteDialog, setShowCompleteDialog] = useState(false)
+  const [completedSession, setCompletedSession] = useState<Session | null>(null)
   
   // Update timer when initialMinutes changes
   useEffect(() => {
@@ -116,17 +119,34 @@ export default function CountdownTimer({
     if (!activeSession) return
     
     try {
-      await updateSession.mutateAsync({
+      const result = await updateSession.mutateAsync({
         id: activeSession._id,
         data: {
           end: new Date().toISOString()
         }
       })
+      
+      // Calculate duration for the completed session
+      const endTime = new Date()
+      const startTime = new Date(activeSession.start)
+      const durationMin = Math.round((endTime.getTime() - startTime.getTime()) / 1000 / 60)
+      
+      setCompletedSession({
+        ...activeSession,
+        end: endTime,
+        durationMin
+      })
+      setShowCompleteDialog(true)
+      
       await refetchActive()
-      onStop?.()
     } catch (error) {
       console.error('Failed to stop session:', error)
     }
+  }
+
+  const handleCompleteDialog = () => {
+    setCompletedSession(null)
+    onStop?.()
   }
 
   const formatTime = (seconds: number) => {
@@ -338,6 +358,13 @@ export default function CountdownTimer({
           50% { opacity: 0.7; }
         }
       `}</style>
+
+      <SessionCompleteDialog
+        session={completedSession}
+        open={showCompleteDialog}
+        onOpenChange={setShowCompleteDialog}
+        onComplete={handleCompleteDialog}
+      />
     </div>
   )
 }

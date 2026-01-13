@@ -1,6 +1,6 @@
 import { MongoClient, Db } from "mongodb"
 
-const uri = process.env.MONGODB_URL
+const uri = process.env.MONGODB_URI || process.env.MONGODB_URL
 const dbName = process.env.MONGODB_DB || "tenthousandhours"
 
 type GlobalWithMongo = typeof globalThis & {
