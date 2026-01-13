@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     
     // Verify session IDs belong to user
     if (validatedData.sessionIds.length > 0) {
-      const sessions = await db.collection("sessions").find({
+      const sessions = await db.collection<{ _id: string; userId: string }>("sessions").find({
         _id: { $in: validatedData.sessionIds },
         userId
       }).toArray()
