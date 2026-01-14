@@ -1,3 +1,4 @@
+console.log('webhooks file loaded')
 import { NextResponse } from "next/server"
 import { WebhookEvent, clerkClient } from "@clerk/nextjs/server"
 import { headers } from "next/headers"
