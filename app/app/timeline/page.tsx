@@ -253,7 +253,7 @@ export default function TimelinePage() {
                                   <div
                                     key={i}
                                     className={`w-1.5 h-1.5 rounded-full ${
-                                      i < session.quality
+                                      i < session.quality!
                                         ? 'bg-cta-amber'
                                         : 'bg-border-subtle'
                                     }`}
