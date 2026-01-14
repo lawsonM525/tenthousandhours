@@ -3,6 +3,8 @@ import { auth } from "@clerk/nextjs/server"
 import { getDb } from "@/lib/db"
 import { Session } from "@/lib/types"
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: NextRequest) {
   try {
     const { userId } = await auth()

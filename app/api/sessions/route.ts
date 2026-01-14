@@ -5,6 +5,8 @@ import { createSessionSchema } from "@/lib/schemas"
 import { Session } from "@/lib/types"
 import { z } from "zod"
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: NextRequest) {
   try {
     const { userId } = await auth()

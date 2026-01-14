@@ -6,6 +6,8 @@ import { Category } from "@/lib/types"
 import { z } from "zod"
 import { nanoid } from "nanoid"
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: NextRequest) {
   try {
     const { userId } = await auth()

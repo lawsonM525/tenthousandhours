@@ -5,6 +5,8 @@ import { updateCategorySchema } from "@/lib/schemas"
 import { Category } from "@/lib/types"
 import { z } from "zod"
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }

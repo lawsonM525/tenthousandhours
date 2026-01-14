@@ -6,6 +6,8 @@ import { Session } from "@/lib/types"
 import { ObjectId } from "mongodb"
 import { z } from "zod"
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
