@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb"
 import { getDb } from "@/lib/db"
-import { nanoid } from "nanoid"
+import crypto from "crypto"
 import { Category, CategoryColor } from "@/lib/types"
 
 export type CreateUserParams = {
@@ -130,7 +130,7 @@ async function createDefaultCategories(userId: string) {
   ]
   
   const categoriesWithIds = defaultCategories.map(cat => ({
-    _id: nanoid(),
+    _id: crypto.randomUUID(),
     ...cat
   }))
   

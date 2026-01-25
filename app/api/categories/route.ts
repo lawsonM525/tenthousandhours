@@ -4,7 +4,7 @@ import { getDb } from "@/lib/db"
 import { createCategorySchema } from "@/lib/schemas"
 import { Category } from "@/lib/types"
 import { z } from "zod"
-import { nanoid } from "nanoid"
+import crypto from "crypto"
 
 export const dynamic = 'force-dynamic'
 
@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
     // Create category
     const now = new Date()
     const category: Category = {
-      _id: nanoid(),
+      _id: crypto.randomUUID(),
       userId,
       name: validatedData.name,
       color: validatedData.color,

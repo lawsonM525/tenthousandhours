@@ -4,7 +4,7 @@ import { getDb } from "@/lib/db"
 import { createNoteSchema } from "@/lib/schemas"
 import { Note } from "@/lib/types"
 import { z } from "zod"
-import { nanoid } from "nanoid"
+import crypto from "crypto"
 
 export const dynamic = 'force-dynamic'
 
@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
     // Create note
     const now = new Date()
     const note: Note = {
-      _id: nanoid(),
+      _id: crypto.randomUUID(),
       userId,
       body: validatedData.body,
       sessionIds: validatedData.sessionIds,
