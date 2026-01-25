@@ -93,12 +93,32 @@ const config = {
           from: { transform: "translateX(0)" },
           to: { transform: "translateX(100%)" },
         },
+        "pulse-slow": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.5" },
+        },
+        "float": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        "bounce-soft": {
+          "0%, 100%": { transform: "translateY(0) scale(1)" },
+          "50%": { transform: "translateY(-5px) scale(1.02)" },
+        },
+        "spin-slow": {
+          from: { transform: "rotate(0deg)" },
+          to: { transform: "rotate(360deg)" },
+        },
       },
       animation: {
         "fade-in": "fade-in 150ms ease-out",
         "fade-out": "fade-out 150ms ease-in",
         "slide-in": "slide-in-from-right 200ms ease-out",
         "slide-out": "slide-out-to-right 200ms ease-in",
+        "pulse-slow": "pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "float": "float 3s ease-in-out infinite",
+        "bounce-soft": "bounce-soft 2s ease-in-out infinite",
+        "spin-slow": "spin-slow 12s linear infinite",
       },
     },
   },
