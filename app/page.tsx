@@ -60,14 +60,14 @@ const weeklyData = [
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[var(--background)] radial-grid">
+    <div className="min-h-screen bg-[var(--background)] radial-grid overflow-x-hidden">
       <Navigation />
       
-      <main className="mx-auto max-w-7xl px-6 py-12 lg:py-24">
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 py-8 sm:py-12 lg:py-24">
         {/* Hero Section */}
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
           {/* Left: Hero Text */}
-          <div className="space-y-10">
+          <div className="space-y-6 sm:space-y-8 lg:space-y-10">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#1FDEFF]/10 border border-[#1FDEFF]/20 text-[#1FDEFF] text-xs font-bold uppercase tracking-wider">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#1FDEFF] opacity-75"></span>
@@ -76,11 +76,11 @@ export default function Home() {
               Know thyself
             </div>
             
-            <h1 className="text-5xl lg:text-7xl xl:text-8xl font-bold leading-[1.05] tracking-tight text-white">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl xl:text-8xl font-bold leading-[1.05] tracking-tight text-white">
               Log your <span className="text-[#F11D75] italic">whole</span> day, see the <span className="text-[#A3FF1F]">truth.</span>
             </h1>
-            
-            <p className="text-xl text-slate-400 leading-relaxed max-w-xl">
+
+            <p className="text-base sm:text-lg lg:text-xl text-slate-400 leading-relaxed max-w-xl">
               10,000hours is the mastery ledger for people who want awareness over distractions. Track every minute, capture the story behind it, and get the insights that help you master what matters.
             </p>
             
@@ -114,7 +114,7 @@ export default function Home() {
             </div>
             
             {/* Hero Highlights */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-12 border-t border-white/10">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 pt-6 sm:pt-8 lg:pt-12 border-t border-white/10">
               {heroHighlights.map((highlight) => (
                 <div key={highlight.title} className="space-y-2">
                   <div className={`${highlight.color} font-bold`}>{highlight.title}</div>
@@ -125,80 +125,80 @@ export default function Home() {
           </div>
           
           {/* Right: Hero Timer Card */}
-          <div className="relative">
-            <div className="absolute -top-20 -right-20 w-96 h-96 bg-[#F11D75]/20 rounded-full blur-[120px] animate-pulse-slow"></div>
-            <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-[#1FDEFF]/10 rounded-full blur-[120px] animate-pulse-slow"></div>
-            
-            <div className="glass-card rounded-[3rem] p-12 relative overflow-hidden flex flex-col items-center">
+          <div className="relative overflow-hidden">
+            <div className="absolute -top-20 -right-20 w-64 h-64 sm:w-96 sm:h-96 bg-[#F11D75]/20 rounded-full blur-[120px] animate-pulse-slow"></div>
+            <div className="absolute -bottom-20 -left-20 w-64 h-64 sm:w-96 sm:h-96 bg-[#1FDEFF]/10 rounded-full blur-[120px] animate-pulse-slow"></div>
+
+            <div className="glass-card rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-8 lg:p-12 relative overflow-hidden flex flex-col items-center">
               {/* Timer Header */}
-              <div className="w-full flex justify-between items-center mb-12">
-                <div className="flex items-center gap-3">
-                  <span className="w-3 h-3 rounded-full bg-[#F11D75] animate-pulse"></span>
-                  <span className="text-sm font-bold tracking-widest uppercase text-slate-400">CS Girlies</span>
+              <div className="w-full flex justify-between items-center mb-6 sm:mb-8 lg:mb-12">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-[#F11D75] animate-pulse"></span>
+                  <span className="text-xs sm:text-sm font-bold tracking-widest uppercase text-slate-400">CS Girlies</span>
                 </div>
-                <div className="px-4 py-1 rounded-full border border-white/10 text-[10px] font-bold tracking-widest uppercase text-slate-500">
+                <div className="px-2 py-1 sm:px-4 rounded-full border border-white/10 text-[8px] sm:text-[10px] font-bold tracking-widest uppercase text-slate-500">
                   Active Session
                 </div>
               </div>
-              
+
               {/* Timer Ring */}
-              <div className="relative w-80 h-80 flex items-center justify-center">
+              <div className="relative w-48 h-48 sm:w-64 sm:h-64 lg:w-80 lg:h-80 flex items-center justify-center">
                 <div className="absolute inset-0 rounded-full border-4 border-white/5 animate-spin-slow"></div>
                 <svg className="absolute inset-0 w-full h-full -rotate-90 transform" viewBox="0 0 100 100">
-                  <circle 
-                    className="text-[#F11D75]" 
-                    cx="50" 
-                    cy="50" 
-                    fill="transparent" 
-                    r="45" 
-                    stroke="currentColor" 
-                    strokeDasharray="282.6" 
-                    strokeDashoffset="60" 
-                    strokeLinecap="round" 
+                  <circle
+                    className="text-[#F11D75]"
+                    cx="50"
+                    cy="50"
+                    fill="transparent"
+                    r="45"
+                    stroke="currentColor"
+                    strokeDasharray="282.6"
+                    strokeDashoffset="60"
+                    strokeLinecap="round"
                     strokeWidth="4"
                   />
                 </svg>
-                
-                <div className="concentric-ring w-64 h-64 rounded-full border-2 border-[#1FDEFF]/20 flex items-center justify-center">
-                  <div className="concentric-ring w-48 h-48 rounded-full border-2 border-[#A3FF1F]/20 flex items-center justify-center">
-                    <div className="w-20 h-20 bg-[#F11D75] rounded-full shadow-[0_0_40px_rgba(255,31,142,0.5)]"></div>
+
+                <div className="concentric-ring w-40 h-40 sm:w-52 sm:h-52 lg:w-64 lg:h-64 rounded-full border-2 border-[#1FDEFF]/20 flex items-center justify-center">
+                  <div className="concentric-ring w-28 h-28 sm:w-36 sm:h-36 lg:w-48 lg:h-48 rounded-full border-2 border-[#A3FF1F]/20 flex items-center justify-center">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 bg-[#F11D75] rounded-full shadow-[0_0_40px_rgba(255,31,142,0.5)]"></div>
                   </div>
                 </div>
-                
+
                 {/* Timer Display */}
                 <div className="absolute bottom-[-15%] text-center">
-                  <div className="text-[10px] tracking-[0.3em] uppercase font-bold text-slate-500 mb-1">Website Fix</div>
-                  <div className="text-7xl font-bold tabular-nums text-white">24:53</div>
-                  <div className="text-xs font-medium text-slate-400 mt-1">09:40 — 10:05</div>
+                  <div className="text-[8px] sm:text-[10px] tracking-[0.3em] uppercase font-bold text-slate-500 mb-1">Website Fix</div>
+                  <div className="text-4xl sm:text-5xl lg:text-7xl font-bold tabular-nums text-white">24:53</div>
+                  <div className="text-[10px] sm:text-xs font-medium text-slate-400 mt-1">09:40 — 10:05</div>
                 </div>
               </div>
-              
+
               {/* Timer Controls */}
-              <div className="flex items-center gap-6 mt-32">
-                <button className="w-14 h-14 rounded-2xl glass-card flex items-center justify-center hover:bg-white/10 transition-all hover:scale-110 text-white">
-                  <Pause className="h-6 w-6" />
+              <div className="flex items-center gap-3 sm:gap-4 lg:gap-6 mt-16 sm:mt-24 lg:mt-32">
+                <button className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-xl sm:rounded-2xl glass-card flex items-center justify-center hover:bg-white/10 transition-all hover:scale-110 text-white">
+                  <Pause className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6" />
                 </button>
-                <button className="w-20 h-20 rounded-3xl bg-[#F11D75] text-white flex items-center justify-center shadow-lg shadow-[#F11D75]/30 transform hover:rotate-12 hover:scale-110 transition-all active:scale-95">
-                  <Square className="h-8 w-8" />
+                <button className="w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-2xl sm:rounded-3xl bg-[#F11D75] text-white flex items-center justify-center shadow-lg shadow-[#F11D75]/30 transform hover:rotate-12 hover:scale-110 transition-all active:scale-95">
+                  <Square className="h-5 w-5 sm:h-6 sm:h-6 lg:h-8 lg:w-8" />
                 </button>
-                <button className="w-14 h-14 rounded-2xl glass-card flex items-center justify-center hover:bg-white/10 transition-all hover:scale-110 text-white">
-                  <FastForward className="h-6 w-6" />
+                <button className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-xl sm:rounded-2xl glass-card flex items-center justify-center hover:bg-white/10 transition-all hover:scale-110 text-white">
+                  <FastForward className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6" />
                 </button>
               </div>
-              
+
               {/* Session Stats */}
-              <div className="grid grid-cols-3 gap-4 w-full mt-16">
-                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-center">
-                  <div className="text-[10px] uppercase font-bold text-slate-500 mb-1">Focused</div>
-                  <div className="text-2xl font-bold text-[#1FDEFF]">5</div>
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 w-full mt-8 sm:mt-12 lg:mt-16">
+                <div className="p-2 sm:p-3 lg:p-4 rounded-xl sm:rounded-2xl bg-white/5 border border-white/5 text-center">
+                  <div className="text-[8px] sm:text-[10px] uppercase font-bold text-slate-500 mb-1">Focused</div>
+                  <div className="text-lg sm:text-xl lg:text-2xl font-bold text-[#1FDEFF]">5</div>
                 </div>
-                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-center">
-                  <div className="text-[10px] uppercase font-bold text-slate-500 mb-1">Neutral</div>
-                  <div className="text-2xl font-bold text-white">14</div>
+                <div className="p-2 sm:p-3 lg:p-4 rounded-xl sm:rounded-2xl bg-white/5 border border-white/5 text-center">
+                  <div className="text-[8px] sm:text-[10px] uppercase font-bold text-slate-500 mb-1">Neutral</div>
+                  <div className="text-lg sm:text-xl lg:text-2xl font-bold text-white">14</div>
                 </div>
-                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-center">
-                  <div className="text-[10px] uppercase font-bold text-slate-500 mb-1">Distracted</div>
-                  <div className="text-2xl font-bold text-[#F11D75]">4</div>
+                <div className="p-2 sm:p-3 lg:p-4 rounded-xl sm:rounded-2xl bg-white/5 border border-white/5 text-center">
+                  <div className="text-[8px] sm:text-[10px] uppercase font-bold text-slate-500 mb-1">Distracted</div>
+                  <div className="text-lg sm:text-xl lg:text-2xl font-bold text-[#F11D75]">4</div>
                 </div>
               </div>
             </div>
@@ -206,17 +206,17 @@ export default function Home() {
         </div>
         
         {/* Timeline Section */}
-        <div className="mt-40 grid lg:grid-cols-2 gap-24 items-start">
+        <div className="mt-16 sm:mt-24 lg:mt-40 grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-24 items-start">
           {/* Timeline Card */}
-          <div className="order-2 lg:order-1 glass-card rounded-[2.5rem] p-8 space-y-4">
-            <div className="flex justify-between items-end mb-8">
+          <div className="order-2 lg:order-1 glass-card rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-6 lg:p-8 space-y-4">
+            <div className="flex justify-between items-end mb-4 sm:mb-6 lg:mb-8">
               <div>
-                <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Timeline</div>
-                <div className="text-3xl font-bold text-white">Mon, Oct 13</div>
+                <div className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Timeline</div>
+                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">Mon, Oct 13</div>
               </div>
               <div className="text-right">
-                <div className="text-xs font-bold text-slate-500 uppercase mb-1">Total focus</div>
-                <div className="text-2xl font-bold text-[#1FDEFF]">9h 36m</div>
+                <div className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase mb-1">Total focus</div>
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold text-[#1FDEFF]">9h 36m</div>
               </div>
             </div>
             
@@ -255,14 +255,14 @@ export default function Home() {
           </div>
           
           {/* Timeline Text */}
-          <div className="order-1 lg:order-2 py-12 space-y-8">
+          <div className="order-1 lg:order-2 py-4 sm:py-8 lg:py-12 space-y-4 sm:space-y-6 lg:space-y-8">
             <div className="inline-flex px-4 py-1.5 rounded-full bg-[#A3FF1F]/10 border border-[#A3FF1F]/20 text-[#A3FF1F] text-xs font-bold uppercase tracking-wider">
               Timeline built for truth
             </div>
-            <h2 className="text-4xl lg:text-5xl xl:text-7xl font-bold leading-tight text-white">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-7xl font-bold leading-tight text-white">
               Drag blocks, fill gaps, and see the <span className="text-[#1FDEFF]">full story.</span>
             </h2>
-            <p className="text-xl text-slate-400 leading-relaxed">
+            <p className="text-base sm:text-lg lg:text-xl text-slate-400 leading-relaxed">
               The timeline makes every hour accountable. Drag to resize, drag to move, or tap an empty slot to log what really happened. Zebra stripes remind you where time is untracked.
             </p>
             <ul className="space-y-4 text-slate-300">
@@ -283,12 +283,12 @@ export default function Home() {
         </div>
         
         {/* Insights Section */}
-        <div className="mt-40">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="mt-16 sm:mt-24 lg:mt-40">
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
             {/* Chart Card */}
-            <div className="glass-card rounded-[2.5rem] p-8">
-              <div className="flex justify-between items-center mb-10">
-                <h3 className="font-bold text-2xl text-white">Daily Distribution</h3>
+            <div className="glass-card rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-6 lg:p-8">
+              <div className="flex justify-between items-center mb-6 sm:mb-8 lg:mb-10">
+                <h3 className="font-bold text-lg sm:text-xl lg:text-2xl text-white">Daily Distribution</h3>
                 <div className="flex gap-2">
                   <button className="px-4 py-1.5 rounded-lg bg-white/5 text-[10px] font-bold uppercase tracking-widest text-slate-400">
                     This week
@@ -296,7 +296,7 @@ export default function Home() {
                 </div>
               </div>
               
-              <div className="flex justify-between items-end h-80 gap-3">
+              <div className="flex justify-between items-end h-48 sm:h-64 lg:h-80 gap-2 sm:gap-3">
                 {weeklyData.map((day) => (
                   <div key={day.day} className="flex-1 flex flex-col justify-end items-center gap-3 h-full">
                     <div 
@@ -317,11 +317,11 @@ export default function Home() {
             </div>
             
             {/* Insights Text */}
-            <div className="space-y-8">
-              <h2 className="text-4xl lg:text-5xl font-bold leading-tight text-white">
+            <div className="space-y-4 sm:space-y-6 lg:space-y-8">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-white">
                 Deep <span className="text-[#8B5CF6]">insights</span> without the noise.
               </h2>
-              <p className="text-xl text-slate-400 leading-relaxed">
+              <p className="text-base sm:text-lg lg:text-xl text-slate-400 leading-relaxed">
                 Every session rolls into rich analytics. Spot trends by category, surface unlogged time, and see pacing tips on how to close the gap between where you are and where mastery lives.
               </p>
               <div className="flex flex-wrap gap-3">
@@ -343,34 +343,34 @@ export default function Home() {
         </div>
         
         {/* Final CTA Section */}
-        <div className="mt-40 text-center space-y-12">
+        <div className="mt-16 sm:mt-24 lg:mt-40 text-center space-y-6 sm:space-y-8 lg:space-y-12">
           <div className="relative inline-block">
             <div className="absolute inset-0 bg-[#F11D75]/20 blur-[80px] -z-10"></div>
-            <h2 className="text-5xl lg:text-7xl xl:text-8xl font-bold tracking-tight text-white">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl xl:text-8xl font-bold tracking-tight text-white">
               Master what <span className="italic text-[#F11D75]">matters.</span>
             </h2>
           </div>
-          <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg lg:text-xl text-slate-400 max-w-2xl mx-auto">
             Join thousands of builders who track all 24 hours, learn from their notes, and pace toward 10,000 hours of deliberate practice.
           </p>
           <div className="flex flex-col items-center gap-6">
             <SignedOut>
               <SignUpButton mode="modal">
-                <button className="px-12 py-6 bg-[#F11D75] text-white rounded-[2rem] font-bold text-2xl hover:scale-110 hover:rotate-3 transition-all neon-glow-magenta group">
+                <button className="px-6 py-4 sm:px-8 sm:py-5 lg:px-12 lg:py-6 bg-[#F11D75] text-white rounded-xl sm:rounded-2xl lg:rounded-[2rem] font-bold text-lg sm:text-xl lg:text-2xl hover:scale-110 hover:rotate-3 transition-all neon-glow-magenta group">
                   Explore the product
-                  <span className="block text-xs font-normal opacity-70 mt-1 uppercase tracking-widest">
+                  <span className="block text-[10px] sm:text-xs font-normal opacity-70 mt-1 uppercase tracking-widest">
                     No tiers. No ads. Just the truth.
                   </span>
                 </button>
               </SignUpButton>
             </SignedOut>
             <SignedIn>
-              <Link 
+              <Link
                 href="/app/now"
-                className="px-12 py-6 bg-[#F11D75] text-white rounded-[2rem] font-bold text-2xl hover:scale-110 hover:rotate-3 transition-all neon-glow-magenta group"
+                className="px-6 py-4 sm:px-8 sm:py-5 lg:px-12 lg:py-6 bg-[#F11D75] text-white rounded-xl sm:rounded-2xl lg:rounded-[2rem] font-bold text-lg sm:text-xl lg:text-2xl hover:scale-110 hover:rotate-3 transition-all neon-glow-magenta group"
               >
                 Explore the product
-                <span className="block text-xs font-normal opacity-70 mt-1 uppercase tracking-widest">
+                <span className="block text-[10px] sm:text-xs font-normal opacity-70 mt-1 uppercase tracking-widest">
                   No tiers. No ads. Just the truth.
                 </span>
               </Link>
@@ -380,7 +380,7 @@ export default function Home() {
       </main>
       
       {/* Footer */}
-      <footer className="mt-40 border-t border-white/5 py-12 px-6">
+      <footer className="mt-16 sm:mt-24 lg:mt-40 border-t border-white/5 py-8 sm:py-12 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex items-center gap-4 text-slate-500 text-sm">
             <span className="font-bold text-slate-400">© {new Date().getFullYear()} 10,000hours.</span>
