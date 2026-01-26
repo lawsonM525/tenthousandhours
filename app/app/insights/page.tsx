@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, startOfDay, endOfDay, isToday } from "date-fns"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, startOfDay, endOfDay, isToday, subDays } from "date-fns"
+import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Flame, Trophy, Calendar as CalendarIcon } from "lucide-react"
 import { useSessions } from "@/lib/hooks/use-sessions"
 import { useCategories } from "@/lib/hooks/use-categories"
 import { Category } from "@/lib/types"
@@ -27,6 +27,21 @@ export default function InsightsPage() {
   const { data: weekSessions = [], isLoading: weekLoading } = useSessions({
     startDate: weekStart.toISOString(),
     endDate: weekEnd.toISOString()
+  })
+  
+  // Fetch sessions for previous week (for comparison)
+  const prevWeekStart = subWeeks(weekStart, 1)
+  const prevWeekEnd = subWeeks(weekEnd, 1)
+  const { data: prevWeekSessions = [] } = useSessions({
+    startDate: prevWeekStart.toISOString(),
+    endDate: prevWeekEnd.toISOString()
+  })
+  
+  // Fetch sessions for streak calculation (last 30 days)
+  const thirtyDaysAgo = subDays(new Date(), 30)
+  const { data: recentSessions = [] } = useSessions({
+    startDate: thirtyDaysAgo.toISOString(),
+    endDate: new Date().toISOString()
   })
   
   // Fetch sessions for selected day
@@ -64,8 +79,22 @@ export default function InsightsPage() {
   // Calculate stats
   const stats = useMemo(() => {
     const totalMinutes = weekSessions.reduce((sum, s) => sum + (s.durationMin || 0), 0)
+    const sessionCount = weekSessions.length
+    const avgSessionLength = sessionCount > 0 ? Math.round(totalMinutes / sessionCount) : 0
     const daysWithSessions = new Set(weekSessions.map(s => format(new Date(s.start), 'yyyy-MM-dd'))).size
     const avgMinutesPerDay = daysWithSessions > 0 ? totalMinutes / daysWithSessions : 0
+    
+    // Previous week stats for comparison
+    const prevTotalMinutes = prevWeekSessions.reduce((sum, s) => sum + (s.durationMin || 0), 0)
+    const prevSessionCount = prevWeekSessions.length
+    
+    // Calculate percentage changes
+    const totalChange = prevTotalMinutes > 0 
+      ? Math.round(((totalMinutes - prevTotalMinutes) / prevTotalMinutes) * 100) 
+      : totalMinutes > 0 ? 100 : 0
+    const sessionCountChange = prevSessionCount > 0 
+      ? Math.round(((sessionCount - prevSessionCount) / prevSessionCount) * 100) 
+      : sessionCount > 0 ? 100 : 0
     
     // Find most productive hour
     const hourCounts = new Map<number, number>()
@@ -92,13 +121,61 @@ export default function InsightsPage() {
       .reduce((sum, s) => sum + (s.durationMin || 0), 0)
     const focusBreakRatio = breakMinutes > 0 ? (focusMinutes / breakMinutes).toFixed(1) : focusMinutes > 0 ? '∞' : '0'
     
+    // Best and worst day
+    const dayMinutes = new Map<string, { date: Date, minutes: number }>()
+    weekSessions.forEach(session => {
+      const dateKey = format(new Date(session.start), 'yyyy-MM-dd')
+      const existing = dayMinutes.get(dateKey) || { date: new Date(session.start), minutes: 0 }
+      dayMinutes.set(dateKey, {
+        date: existing.date,
+        minutes: existing.minutes + (session.durationMin || 0)
+      })
+    })
+    
+    let bestDay: { date: Date, minutes: number } | null = null
+    let worstDay: { date: Date, minutes: number } | null = null
+    dayMinutes.forEach((data) => {
+      if (!bestDay || data.minutes > bestDay.minutes) bestDay = { date: data.date, minutes: data.minutes }
+      if (!worstDay || data.minutes < worstDay.minutes) worstDay = { date: data.date, minutes: data.minutes }
+    })
+    
     return {
       totalMinutes,
       avgMinutesPerDay,
       mostProductiveHour,
-      focusBreakRatio
+      focusBreakRatio,
+      sessionCount,
+      avgSessionLength,
+      totalChange,
+      sessionCountChange,
+      bestDay: bestDay as { date: Date, minutes: number } | null,
+      worstDay: worstDay as { date: Date, minutes: number } | null
     }
-  }, [weekSessions, categoryMap])
+  }, [weekSessions, prevWeekSessions, categoryMap])
+  
+  // Calculate streak (consecutive days with sessions)
+  const streak = useMemo(() => {
+    const today = startOfDay(new Date())
+    const daysWithSessions = new Set(
+      recentSessions.map(s => format(new Date(s.start), 'yyyy-MM-dd'))
+    )
+    
+    let currentStreak = 0
+    let checkDate = today
+    
+    // Check if today has sessions, if not start from yesterday
+    if (!daysWithSessions.has(format(today, 'yyyy-MM-dd'))) {
+      checkDate = subDays(today, 1)
+    }
+    
+    // Count consecutive days backwards
+    while (daysWithSessions.has(format(checkDate, 'yyyy-MM-dd'))) {
+      currentStreak++
+      checkDate = subDays(checkDate, 1)
+    }
+    
+    return currentStreak
+  }, [recentSessions])
   
   // Calculate category distribution
   const categoryDistribution = useMemo(() => {
@@ -230,12 +307,76 @@ export default function InsightsPage() {
         ) : (
           <div className="max-w-6xl mx-auto grid grid-cols-12 gap-6">
             <div className="col-span-12 lg:col-span-7 space-y-6">
+              {/* Streak & Quick Stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {/* Streak */}
+                <div className="distressed-card p-4 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-mango-orange flex items-center justify-center border-2 border-mango-dark">
+                    <Flame className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-black text-mango-orange tracking-wider">Streak</p>
+                    <p className="text-xl font-black text-mango-dark">{streak} days</p>
+                  </div>
+                </div>
+                
+                {/* Sessions */}
+                <div className="distressed-card p-4 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-mango-green flex items-center justify-center border-2 border-mango-dark">
+                    <CalendarIcon className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-black text-mango-green tracking-wider">Sessions</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-xl font-black text-mango-dark">{stats.sessionCount}</p>
+                      {stats.sessionCountChange !== 0 && (
+                        <span className={`text-xs font-bold flex items-center ${stats.sessionCountChange > 0 ? 'text-mango-green' : 'text-mango-red'}`}>
+                          {stats.sessionCountChange > 0 ? <TrendingUp className="w-3 h-3 mr-0.5" /> : <TrendingDown className="w-3 h-3 mr-0.5" />}
+                          {Math.abs(stats.sessionCountChange)}%
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Best Day */}
+                {stats.bestDay && (
+                  <div className="distressed-card p-4 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-mango-yellow flex items-center justify-center border-2 border-mango-dark">
+                      <Trophy className="w-5 h-5 text-mango-dark" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase font-black text-mango-dark tracking-wider">Best Day</p>
+                      <p className="text-sm font-black text-mango-dark">{format(stats.bestDay.date, 'EEE')}</p>
+                      <p className="text-xs text-slate-500 font-bold">{formatDuration(stats.bestDay.minutes)}</p>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Avg Session */}
+                <div className="distressed-card p-4 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-[#9373FF] flex items-center justify-center border-2 border-mango-dark">
+                    <span className="text-white font-black text-sm">AVG</span>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-black text-[#9373FF] tracking-wider">Per Session</p>
+                    <p className="text-xl font-black text-mango-dark">{formatDuration(stats.avgSessionLength)}</p>
+                  </div>
+                </div>
+              </div>
+
               {/* Stats Overview */}
               <div className="distressed-card p-6">
                 <div className="mb-4 flex items-center justify-between">
                   <div className="inline-block bg-mango-orange px-3 py-1 border-2 border-mango-dark">
                     <span className="font-bold text-xs uppercase text-white">Week Overview</span>
                   </div>
+                  {stats.totalChange !== 0 && (
+                    <div className={`flex items-center gap-1 px-2 py-1 border-2 border-mango-dark font-bold text-xs ${stats.totalChange > 0 ? 'bg-mango-green/20 text-mango-green' : 'bg-mango-red/20 text-mango-red'}`}>
+                      {stats.totalChange > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                      {stats.totalChange > 0 ? '+' : ''}{stats.totalChange}% vs last week
+                    </div>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                   <div className="p-4 bg-mango-red/10 border-2 border-mango-red">

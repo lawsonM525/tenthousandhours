@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, addDays, isToday } from "date-fns"
+import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, addDays, isToday, isSameDay, eachDayOfInterval } from "date-fns"
 import { ChevronLeft, ChevronRight, Calendar, Trash2, Plus } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -65,6 +65,20 @@ export default function TimelinePage() {
   })
   
   const { data: categories = [] } = useCategories()
+  
+  // Fetch all notes to display on timeline blocks
+  const { data: allNotes = [] } = useNotes()
+  
+  // Create a map of session IDs to notes for quick lookup
+  const notesBySessionId = useMemo(() => {
+    const map = new Map<string, string>()
+    allNotes.forEach(note => {
+      note.sessionIds.forEach(sessionId => {
+        map.set(sessionId, note.body)
+      })
+    })
+    return map
+  }, [allNotes])
   
   // Create a map of category IDs to categories for quick lookup
   const categoryMap = useMemo(() => {
@@ -303,77 +317,101 @@ export default function TimelinePage() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <header className="bg-white border-b-4 border-mango-dark px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div>
-            <div className="inline-block bg-mango-orange px-3 py-1 border-2 border-mango-dark transform -rotate-1 mb-2">
-              <span className="font-bold text-xs uppercase text-white">See The Full Story</span>
-            </div>
-            <h1 className="text-3xl font-black uppercase text-mango-dark">Timeline</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigateDate('prev')}
-              className="w-8 h-8 bg-mango-dark text-white border-2 border-mango-dark shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[3px_3px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all flex items-center justify-center"
-            >
-              <ChevronLeft className="h-5 w-5 stroke-[3]" />
-            </button>
-            
-            <div className="flex items-center gap-2 px-4 py-2 bg-mango-dark text-white font-bold text-sm uppercase">
-              <Calendar className="h-4 w-4" />
-              <span>
-                {viewMode === 'day' 
-                  ? format(selectedDate, 'EEE, MMM d')
-                  : `${format(dateRange.start, 'MMM d')} - ${format(dateRange.end, 'MMM d')}`
-                }
-              </span>
+      <header className="bg-white border-b-4 border-mango-dark px-4 sm:px-6 py-3 sm:py-4">
+        <div className="max-w-6xl mx-auto">
+          {/* Mobile: Stack everything vertically */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            {/* Title - hidden on mobile, shown on desktop */}
+            <div className="hidden sm:block">
+              <div className="inline-block bg-mango-orange px-3 py-1 border-2 border-mango-dark transform -rotate-1 mb-2">
+                <span className="font-bold text-xs uppercase text-white">See The Full Story</span>
+              </div>
+              <h1 className="text-3xl font-black uppercase text-mango-dark">Timeline</h1>
             </div>
             
-            <button
-              onClick={() => navigateDate('next')}
-              className="w-8 h-8 bg-mango-dark text-white border-2 border-mango-dark shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[3px_3px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all flex items-center justify-center"
-            >
-              <ChevronRight className="h-5 w-5 stroke-[3]" />
-            </button>
-            
-            <button
-              onClick={goToToday}
-              disabled={isToday(selectedDate)}
-              className="px-3 py-1 bg-mango-yellow text-mango-dark font-bold text-sm uppercase border-2 border-mango-dark shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[3px_3px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-[2px_2px_0px_#1a1a1a] disabled:hover:translate-y-0"
-            >
-              Today
-            </button>
-            
-            <div className="flex gap-1 ml-3">
+            {/* Mobile title row */}
+            <div className="flex items-center justify-between sm:hidden">
+              <h1 className="text-xl font-black uppercase text-mango-dark">Timeline</h1>
               <button
-                onClick={() => setViewMode('day')}
-                className={`px-3 py-1 font-bold text-sm uppercase border-2 border-mango-dark transition-all ${
-                  viewMode === 'day' 
-                    ? 'bg-mango-red text-white shadow-[2px_2px_0px_#1a1a1a]' 
-                    : 'bg-white text-mango-dark hover:bg-mango-red/10'
-                }`}
+                onClick={openAddDialog}
+                className="px-3 py-1.5 bg-mango-green text-white font-bold text-xs uppercase border-2 border-mango-dark shadow-[2px_2px_0px_#1a1a1a] flex items-center gap-1"
               >
-                Day
-              </button>
-              <button
-                onClick={() => setViewMode('week')}
-                className={`px-3 py-1 font-bold text-sm uppercase border-2 border-mango-dark transition-all ${
-                  viewMode === 'week' 
-                    ? 'bg-mango-red text-white shadow-[2px_2px_0px_#1a1a1a]' 
-                    : 'bg-white text-mango-dark hover:bg-mango-red/10'
-                }`}
-              >
-                Week
+                <Plus className="w-3 h-3 stroke-[3]" />
+                Add
               </button>
             </div>
             
-            <button
-              onClick={openAddDialog}
-              className="ml-3 px-4 py-2 bg-mango-green text-white font-bold text-sm uppercase border-2 border-mango-dark shadow-[3px_3px_0px_#1a1a1a] hover:shadow-[4px_4px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4 stroke-[3]" />
-              Add Session
-            </button>
+            {/* Navigation controls */}
+            <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3">
+              {/* Date navigation */}
+              <div className="flex items-center gap-1 sm:gap-2">
+                <button
+                  onClick={() => navigateDate('prev')}
+                  className="w-7 h-7 sm:w-8 sm:h-8 bg-mango-dark text-white border-2 border-mango-dark shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[3px_3px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all flex items-center justify-center"
+                >
+                  <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 stroke-[3]" />
+                </button>
+                
+                <div className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-mango-dark text-white font-bold text-xs sm:text-sm uppercase">
+                  <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="whitespace-nowrap">
+                    {viewMode === 'day' 
+                      ? format(selectedDate, 'MMM d')
+                      : `${format(dateRange.start, 'MMM d')} - ${format(dateRange.end, 'MMM d')}`
+                    }
+                  </span>
+                </div>
+                
+                <button
+                  onClick={() => navigateDate('next')}
+                  className="w-7 h-7 sm:w-8 sm:h-8 bg-mango-dark text-white border-2 border-mango-dark shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[3px_3px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all flex items-center justify-center"
+                >
+                  <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 stroke-[3]" />
+                </button>
+              </div>
+              
+              {/* Today button */}
+              <button
+                onClick={goToToday}
+                disabled={isToday(selectedDate)}
+                className="px-2 sm:px-3 py-1 bg-mango-yellow text-mango-dark font-bold text-xs sm:text-sm uppercase border-2 border-mango-dark shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[3px_3px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-[2px_2px_0px_#1a1a1a] disabled:hover:translate-y-0"
+              >
+                Today
+              </button>
+              
+              {/* Day/Week toggle */}
+              <div className="flex gap-0.5 sm:gap-1">
+                <button
+                  onClick={() => setViewMode('day')}
+                  className={`px-2 sm:px-3 py-1 font-bold text-xs sm:text-sm uppercase border-2 border-mango-dark transition-all ${
+                    viewMode === 'day' 
+                      ? 'bg-mango-red text-white shadow-[2px_2px_0px_#1a1a1a]' 
+                      : 'bg-white text-mango-dark hover:bg-mango-red/10'
+                  }`}
+                >
+                  Day
+                </button>
+                <button
+                  onClick={() => setViewMode('week')}
+                  className={`px-2 sm:px-3 py-1 font-bold text-xs sm:text-sm uppercase border-2 border-mango-dark transition-all ${
+                    viewMode === 'week' 
+                      ? 'bg-mango-red text-white shadow-[2px_2px_0px_#1a1a1a]' 
+                      : 'bg-white text-mango-dark hover:bg-mango-red/10'
+                  }`}
+                >
+                  Week
+                </button>
+              </div>
+              
+              {/* Add Session - desktop only */}
+              <button
+                onClick={openAddDialog}
+                className="hidden sm:flex ml-1 sm:ml-3 px-3 sm:px-4 py-1.5 sm:py-2 bg-mango-green text-white font-bold text-xs sm:text-sm uppercase border-2 border-mango-dark shadow-[3px_3px_0px_#1a1a1a] hover:shadow-[4px_4px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all items-center gap-2"
+              >
+                <Plus className="w-4 h-4 stroke-[3]" />
+                Add Session
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -393,34 +431,34 @@ export default function TimelinePage() {
                 </p>
               </div>
             </div>
-          ) : (
+          ) : viewMode === 'day' ? (
             <div className="space-y-4">
               {/* Summary */}
-              <div className="distressed-card p-4">
+              <div className="distressed-card p-3 sm:p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs uppercase font-bold text-slate-500 tracking-widest">
+                    <p className="text-[10px] sm:text-xs uppercase font-bold text-slate-500 tracking-widest">
                       {format(selectedDate, 'EEEE, MMMM d')}
                     </p>
-                    <h3 className="text-2xl font-black text-mango-dark mt-1">
+                    <h3 className="text-lg sm:text-2xl font-black text-mango-dark mt-1">
                       {formatDuration(totalMinutes)} focus logged
                     </h3>
                   </div>
                   <div className="text-right">
-                    <div className="inline-block bg-mango-orange px-3 py-1 border-2 border-mango-dark">
-                      <span className="font-bold text-sm text-white">{sessions.length} sessions</span>
+                    <div className="inline-block bg-mango-orange px-2 sm:px-3 py-1 border-2 border-mango-dark">
+                      <span className="font-bold text-xs sm:text-sm text-white">{sessions.length} sessions</span>
                     </div>
                   </div>
                 </div>
               </div>
               
-              {/* Timeline Grid */}
-              <div className="distressed-card p-6">
-                <div className="grid grid-cols-[80px_1fr] gap-6">
+              {/* Timeline Grid - Day View */}
+              <div className="distressed-card p-3 sm:p-6">
+                <div className="grid grid-cols-[50px_1fr] sm:grid-cols-[80px_1fr] gap-2 sm:gap-6">
                   {/* Hour labels */}
-                  <div className="space-y-6 text-xs font-bold text-slate-500 uppercase">
+                  <div className="space-y-4 sm:space-y-6 text-[10px] sm:text-xs font-bold text-slate-500 uppercase">
                     {Array.from({ length: 24 }).map((_, hour) => (
-                      <div key={hour} className="h-12 flex items-center">
+                      <div key={hour} className="h-8 sm:h-12 flex items-center">
                         <span>{hour.toString().padStart(2, '0')}:00</span>
                       </div>
                     ))}
@@ -433,7 +471,7 @@ export default function TimelinePage() {
                       {Array.from({ length: 24 }).map((_, hour) => (
                         <div 
                           key={hour} 
-                          className="h-12 border-b-2 border-mango-dark/10"
+                          className="h-8 sm:h-12 border-b-2 border-mango-dark/10"
                         />
                       ))}
                     </div>
@@ -447,56 +485,150 @@ export default function TimelinePage() {
                         
                         const startHour = startTime.getHours()
                         const startMinutes = startTime.getMinutes()
-                        const topOffset = (startHour * 48) + (startMinutes / 60 * 48)
+                        // Mobile: 32px per hour, Desktop: 48px per hour
+                        const topOffsetMobile = (startHour * 32) + (startMinutes / 60 * 32)
+                        const topOffsetDesktop = (startHour * 48) + (startMinutes / 60 * 48)
                         
                         const durationMinutes = session.durationMin || 0
-                        const height = Math.max((durationMinutes / 60) * 48, 20)
+                        const heightMobile = Math.max((durationMinutes / 60) * 32, 16)
+                        const heightDesktop = Math.max((durationMinutes / 60) * 48, 20)
                         
                         const color = category ? colorHex[category.color] : '#666'
+                        const sessionNote = notesBySessionId.get(session._id)
                         
                         return (
                           <div
                             key={session._id}
                             onClick={() => openEditDialog(session)}
-                            className="absolute left-0 right-0 mx-1 border-2 border-mango-dark p-3 cursor-pointer shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[4px_4px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all"
+                            className="absolute left-0 right-0 mx-0.5 sm:mx-1 border-2 border-mango-dark p-1.5 sm:p-3 cursor-pointer shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[4px_4px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all overflow-hidden"
                             style={{
-                              top: `${topOffset}px`,
-                              height: `${height}px`,
+                              top: `var(--top-offset)`,
+                              height: `var(--height)`,
                               backgroundColor: color,
+                              // @ts-expect-error - CSS custom properties
+                              '--top-offset': `${topOffsetMobile}px`,
+                              '--height': `${heightMobile}px`,
                             }}
                           >
-                            <div className="flex items-start justify-between text-xs">
+                            <style>{`
+                              @media (min-width: 640px) {
+                                [data-session-id="${session._id}"] {
+                                  --top-offset: ${topOffsetDesktop}px !important;
+                                  --height: ${heightDesktop}px !important;
+                                }
+                              }
+                            `}</style>
+                            <div data-session-id={session._id} className="hidden" />
+                            <div className="flex items-start justify-between text-[10px] sm:text-xs">
                               <span className="text-white/80 font-bold">
                                 {format(startTime, 'HH:mm')} — {format(endTime, 'HH:mm')}
                               </span>
+                              {session.quality && (
+                                <div className="flex gap-0.5">
+                                  {Array.from({ length: 5 }).map((_, i) => (
+                                    <div
+                                      key={i}
+                                      className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${
+                                        i < session.quality!
+                                          ? 'bg-mango-yellow'
+                                          : 'bg-white/30'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                              )}
                             </div>
-                            <p className="font-bold text-sm text-white mt-1 truncate">
+                            <p className="font-bold text-xs sm:text-sm text-white mt-0.5 sm:mt-1 truncate">
                               {session.title}
                             </p>
-                            {category && (
-                              <p className="text-xs text-white/70 font-bold truncate uppercase">
-                                {category.name}
+                            <p className="hidden sm:block text-xs text-white/70 font-bold truncate uppercase">
+                              {category?.name}
+                            </p>
+                            {sessionNote && (
+                              <p className="hidden sm:block text-xs text-white/60 mt-1 italic line-clamp-2">
+                                "{sessionNote}"
                               </p>
-                            )}
-                            {session.quality && (
-                              <div className="flex gap-0.5 mt-1">
-                                {Array.from({ length: 5 }).map((_, i) => (
-                                  <div
-                                    key={i}
-                                    className={`w-1.5 h-1.5 rounded-full ${
-                                      i < session.quality!
-                                        ? 'bg-mango-yellow'
-                                        : 'bg-white/30'
-                                    }`}
-                                  />
-                                ))}
-                              </div>
                             )}
                           </div>
                         )
                       })}
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* Week View */
+            <div className="space-y-4">
+              {/* Summary */}
+              <div className="distressed-card p-3 sm:p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] sm:text-xs uppercase font-bold text-slate-500 tracking-widest">
+                      Week of {format(dateRange.start, 'MMMM d')}
+                    </p>
+                    <h3 className="text-lg sm:text-2xl font-black text-mango-dark mt-1">
+                      {formatDuration(totalMinutes)} focus logged
+                    </h3>
+                  </div>
+                  <div className="text-right">
+                    <div className="inline-block bg-mango-orange px-2 sm:px-3 py-1 border-2 border-mango-dark">
+                      <span className="font-bold text-xs sm:text-sm text-white">{sessions.length} sessions</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Week Grid */}
+              <div className="distressed-card p-3 sm:p-6">
+                <div className="space-y-3 sm:space-y-4">
+                  {eachDayOfInterval({ start: dateRange.start, end: dateRange.end }).map((day) => {
+                    const daySessions = sessions.filter(s => isSameDay(new Date(s.start), day))
+                    const dayMinutes = daySessions.reduce((sum, s) => sum + (s.durationMin || 0), 0)
+                    
+                    return (
+                      <div key={day.toISOString()} className="border-2 border-mango-dark/20 p-3 sm:p-4">
+                        <div className="flex items-center justify-between mb-2 sm:mb-3">
+                          <div className="flex items-center gap-2">
+                            <span className={`font-black text-sm sm:text-lg uppercase ${isToday(day) ? 'text-mango-orange' : 'text-mango-dark'}`}>
+                              {format(day, 'EEE')}
+                            </span>
+                            <span className="text-xs sm:text-sm text-slate-500 font-bold">
+                              {format(day, 'MMM d')}
+                            </span>
+                            {isToday(day) && (
+                              <span className="px-1.5 py-0.5 bg-mango-orange text-white text-[10px] font-bold uppercase">Today</span>
+                            )}
+                          </div>
+                          <span className="text-xs sm:text-sm font-bold text-slate-500">
+                            {formatDuration(dayMinutes)}
+                          </span>
+                        </div>
+                        
+                        {daySessions.length === 0 ? (
+                          <p className="text-xs sm:text-sm text-slate-400 italic">No sessions logged</p>
+                        ) : (
+                          <div className="flex flex-wrap gap-2">
+                            {daySessions.map((session) => {
+                              const category = categoryMap.get(session.categoryId)
+                              const color = category ? colorHex[category.color] : '#666'
+                              
+                              return (
+                                <button
+                                  key={session._id}
+                                  onClick={() => openEditDialog(session)}
+                                  className="px-2 sm:px-3 py-1 sm:py-1.5 border-2 border-mango-dark text-white text-[10px] sm:text-xs font-bold uppercase shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[3px_3px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all truncate max-w-[150px] sm:max-w-[200px]"
+                                  style={{ backgroundColor: color }}
+                                >
+                                  {session.title}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             </div>

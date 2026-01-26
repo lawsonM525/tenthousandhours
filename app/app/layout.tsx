@@ -8,7 +8,6 @@ import {
   Calendar, 
   BarChart3, 
   FileText, 
-  FolderKanban, 
   Settings,
   MessageSquare 
 } from "lucide-react"
@@ -19,7 +18,6 @@ const navigation = [
   { name: "Timeline", href: "/app/timeline", icon: Calendar, color: "mango-orange" },
   { name: "Insights", href: "/app/insights", icon: BarChart3, color: "mango-yellow" },
   { name: "Notes", href: "/app/notes", icon: FileText, color: "mango-green" },
-  { name: "Categories", href: "/app/categories", icon: FolderKanban, color: "mango-red" },
   { name: "Settings", href: "/app/settings", icon: Settings, color: "mango-orange" },
 ]
 
