@@ -58,6 +58,7 @@ const config = {
           orange: '#FFB31A',
           red: '#E62E2D',
           yellow: '#FFD600',
+          green: '#45E06F',
           dark: '#1A1A1A',
         },
       },

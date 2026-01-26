@@ -1,4 +1,18 @@
-const blocks = [
+"use client";
+
+import { Plus } from "lucide-react";
+import { useState } from "react";
+
+type Block = {
+  start: string;
+  end: string;
+  label: string;
+  tone: string;
+  span: string;
+  isGap?: boolean;
+};
+
+const initialBlocks: Block[] = [
   { start: "09:00", end: "10:13", label: "appsSdk - Daily Coding", tone: "#F11D75", span: "row-span-3" },
   { start: "10:15", end: "11:30", label: "API for GhatGPT", tone: "#3A8DFF", span: "row-span-3" },
   { start: "11:35", end: "12:10", label: "id cards format", tone: "#16C7A8", span: "row-span-2" },
@@ -6,7 +20,32 @@ const blocks = [
   { start: "13:30", end: "14:00", label: "Lunch break", tone: "#45E06F", span: "row-span-2" },
 ];
 
+const gapSlots: Block[] = [
+  { start: "10:13", end: "10:15", label: "Add session", tone: "", span: "row-span-1", isGap: true },
+  { start: "12:10", end: "12:30", label: "Add session", tone: "", span: "row-span-1", isGap: true },
+  { start: "14:00", end: "15:00", label: "Add session", tone: "", span: "row-span-2", isGap: true },
+];
+
 export function TimelineShowcase() {
+  const [blocks, setBlocks] = useState<Block[]>(initialBlocks);
+  const [gaps, setGaps] = useState<Block[]>(gapSlots);
+
+  const handleAddSession = (gap: Block) => {
+    const colors = ["#F11D75", "#3A8DFF", "#16C7A8", "#FFB020", "#45E06F", "#9B59B6"];
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+    
+    const newBlock: Block = {
+      start: gap.start,
+      end: gap.end,
+      label: "New session",
+      tone: randomColor,
+      span: gap.span,
+    };
+    
+    setBlocks([...blocks, newBlock]);
+    setGaps(gaps.filter(g => g.start !== gap.start));
+  };
+
   return (
     <section className="section-grid" id="timeline">
       <div className="card-elevated p-6">
@@ -36,8 +75,8 @@ export function TimelineShowcase() {
             <div className="relative grid auto-rows-[40px] gap-2">
               {blocks.map((block) => (
                 <div
-                  key={block.label}
-                  className={`relative overflow-hidden rounded-xl border border-white/5 bg-white/10 p-4 text-sm text-white ${block.span}`}
+                  key={block.label + block.start}
+                  className={`relative overflow-hidden rounded-xl border border-white/5 bg-white/10 p-4 text-sm text-white ${block.span} transition-all duration-300 hover:scale-[1.02] hover:shadow-lg`}
                   style={{ backgroundColor: `${block.tone}1a` }}
                 >
                   <div className="flex items-center justify-between text-xs text-white/70">
@@ -47,6 +86,20 @@ export function TimelineShowcase() {
                   <p className="mt-2 font-medium">{block.label}</p>
                   <p className="text-xs text-white/60">Notes ready · tap to review</p>
                 </div>
+              ))}
+              
+              {/* Gap slots - clickable to add sessions */}
+              {gaps.map((gap) => (
+                <button
+                  key={`gap-${gap.start}`}
+                  onClick={() => handleAddSession(gap)}
+                  className={`relative overflow-hidden rounded-xl border-2 border-dashed border-white/20 p-4 text-sm text-white/50 ${gap.span} transition-all duration-300 hover:border-white/40 hover:bg-white/5 hover:text-white/80 group cursor-pointer`}
+                >
+                  <div className="flex items-center justify-center h-full gap-2">
+                    <Plus className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                    <span className="text-xs font-medium">{gap.start} — {gap.end}</span>
+                  </div>
+                </button>
               ))}
             </div>
           </div>

@@ -316,12 +316,12 @@ export default function CountdownTimer({
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <div 
-              className="text-4xl sm:text-5xl font-light tracking-wider tabular-nums"
-              style={{ color: isOvertime ? colorHex.pink : (isRunning ? colorHex[categoryColor] : 'rgb(245 245 245)') }}
+              className="text-4xl sm:text-5xl font-bold tracking-wider tabular-nums"
+              style={{ color: isOvertime ? colorHex.pink : (isRunning ? colorHex[categoryColor] : 'text-slate-500') }}
             >
               {isOvertime ? '+' : ''}{formatTime(isOvertime ? overtimeSeconds : remainingSeconds)}
             </div>
-            <div className="text-xs sm:text-sm text-text-secondary mt-1">
+            <div className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
               {isRunning ? (isOvertime ? 'overtime' : 'remaining') : 'ready to focus'}
             </div>
           </div>
@@ -360,14 +360,14 @@ export default function CountdownTimer({
 
       {/* Status info */}
       {isRunning && (
-        <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-6 text-xs sm:text-sm text-text-secondary">
+        <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-6 text-xs sm:text-sm text-slate-600 font-medium">
           <span>Total: {formatTime(totalSeconds)}</span>
           <span>Started: {startTime?.toLocaleTimeString()}</span>
         </div>
       )}
       
       {!isRunning && (
-        <div className="text-xs sm:text-sm text-text-muted text-center px-4">
+        <div className="text-xs sm:text-sm text-slate-500 font-medium text-center px-4">
           {!categoryId && "Select a category to start"}
           {categoryId && !title && "Name your task to begin"}
           {categoryId && title && "Ready to start your focus session"}

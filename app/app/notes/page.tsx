@@ -118,7 +118,7 @@ export default function NotesPage() {
                         <Calendar className="h-4 w-4 text-mango-orange" />
                         <span className="font-bold text-mango-dark">{format(new Date(note.createdAt), 'EEEE, MMMM d, yyyy')}</span>
                       </div>
-                      <div className="text-sm font-bold text-slate-400">
+                      <div className="text-sm font-bold text-slate-500">
                         {format(new Date(note.createdAt), 'h:mm a')}
                       </div>
                     </div>
@@ -147,7 +147,7 @@ export default function NotesPage() {
                               <span className="text-mango-dark font-bold">
                                 {info.title}
                               </span>
-                              <span className="text-slate-400 text-xs font-bold">
+                              <span className="text-slate-500 text-xs font-bold">
                                 {Math.floor(info.duration / 60)}h {info.duration % 60}m
                               </span>
                             </div>

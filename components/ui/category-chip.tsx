@@ -16,31 +16,24 @@ export const CategoryChip = React.forwardRef<HTMLDivElement, CategoryChipProps>(
       <div
         ref={ref}
         className={cn(
-          "inline-flex items-center gap-2 px-3 py-1.5 rounded-pill border transition-colors duration-150",
-          variant === "solid" ? undefined : "bg-bg-surface",
-          variant === "solid"
-            ? "border-transparent"
-            : active
-              ? "border-opacity-100"
-              : "border-opacity-30 hover:border-opacity-50",
+          "inline-flex items-center gap-2 px-3 py-1.5 border-2 transition-all duration-150",
+          active 
+            ? "shadow-[2px_2px_0px_#1a1a1a] -translate-y-0.5" 
+            : "hover:shadow-[2px_2px_0px_#1a1a1a] hover:-translate-y-0.5",
           className
         )}
         style={{
-          borderColor: variant === "solid" ? "transparent" : hexColor,
-          backgroundColor:
-            variant === "solid"
-              ? `${hexColor}26`
-              : active
-                ? `${hexColor}26`
-                : undefined,
+          borderColor: hexColor,
+          backgroundColor: active ? hexColor : `${hexColor}20`,
+          color: active ? 'white' : hexColor,
         }}
         {...props}
       >
         <div 
-          className="w-2 h-2 rounded-full flex-shrink-0"
-          style={{ backgroundColor: hexColor }}
+          className="w-2.5 h-2.5 rounded-full flex-shrink-0 border border-current"
+          style={{ backgroundColor: active ? 'white' : hexColor }}
         />
-        <span className="text-label text-text-primary">{label}</span>
+        <span className="text-sm font-bold">{label}</span>
       </div>
     )
   }

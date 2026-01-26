@@ -209,9 +209,9 @@ export default function TimelinePage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigateDate('prev')}
-              className="w-8 h-8 bg-white border-2 border-mango-dark shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[3px_3px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all flex items-center justify-center"
+              className="w-8 h-8 bg-mango-dark text-white border-2 border-mango-dark shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[3px_3px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all flex items-center justify-center"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-5 w-5 stroke-[3]" />
             </button>
             
             <div className="flex items-center gap-2 px-4 py-2 bg-mango-dark text-white font-bold text-sm uppercase">
@@ -226,9 +226,9 @@ export default function TimelinePage() {
             
             <button
               onClick={() => navigateDate('next')}
-              className="w-8 h-8 bg-white border-2 border-mango-dark shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[3px_3px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all flex items-center justify-center"
+              className="w-8 h-8 bg-mango-dark text-white border-2 border-mango-dark shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[3px_3px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all flex items-center justify-center"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-5 w-5 stroke-[3]" />
             </button>
             
             <button
@@ -305,7 +305,7 @@ export default function TimelinePage() {
               <div className="distressed-card p-6">
                 <div className="grid grid-cols-[80px_1fr] gap-6">
                   {/* Hour labels */}
-                  <div className="space-y-6 text-xs font-bold text-slate-400 uppercase">
+                  <div className="space-y-6 text-xs font-bold text-slate-500 uppercase">
                     {Array.from({ length: 24 }).map((_, hour) => (
                       <div key={hour} className="h-12 flex items-center">
                         <span>{hour.toString().padStart(2, '0')}:00</span>

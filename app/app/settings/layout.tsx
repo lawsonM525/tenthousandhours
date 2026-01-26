@@ -32,9 +32,9 @@ export default function SettingsLayout({
 
   return (
     <div className="h-full flex">
-      <aside className="w-72 shrink-0 border-r border-border-subtle bg-bg-surface overflow-auto">
+      <aside className="w-72 shrink-0 border-r-4 border-mango-dark bg-white overflow-auto">
         <div className="p-4">
-          <h2 className="text-small uppercase tracking-wider text-text-secondary px-2">settings</h2>
+          <h2 className="text-xs uppercase tracking-wider text-slate-500 font-bold px-2">settings</h2>
         </div>
         <nav className="px-2 pb-4 space-y-1">
           {settingsNav.map((item) => {
@@ -45,10 +45,10 @@ export default function SettingsLayout({
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-component text-label font-medium transition-colors",
+                  "flex items-center gap-3 px-3 py-2 font-bold uppercase text-sm transition-all",
                   isActive
-                    ? "bg-bg-elevated text-text-primary"
-                    : "text-text-secondary hover:text-text-primary hover:bg-bg-elevated/50"
+                    ? "bg-mango-dark text-white shadow-[2px_2px_0px_#FFB31A]"
+                    : "text-mango-dark hover:bg-mango-yellow/20"
                 )}
               >
                 <Icon className="w-5 h-5" />

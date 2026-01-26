@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Navigation } from "@/components/navigation";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { CheckCircle } from "lucide-react";
@@ -28,6 +29,11 @@ const timelineBlocks = [
     color: "mango-yellow",
     note: "Fine-tuning the hover states and transitions.",
   },
+];
+
+const timelineGaps = [
+  { start: "12:45", end: "13:30", label: "Untracked time" },
+  { start: "13:30", end: "14:00", label: "Untracked time" },
 ];
 
 const _weeklyData = [
@@ -223,6 +229,28 @@ export default function Home() {
                     </div>
                     <h4 className={`font-black text-lg text-mango-dark group-hover:text-${block.color} transition-colors`}>{block.label}</h4>
                     <p className="text-sm text-slate-500 mt-1 italic">{block.note}</p>
+                  </div>
+                </div>
+              ))}
+              
+              {/* Gap slots - clickable to add sessions */}
+              {timelineGaps.map((gap, index) => (
+                <div 
+                  key={`gap-${gap.start}`} 
+                  className="relative pl-14 animate-bounce-soft"
+                  style={{ animationDelay: `${(timelineBlocks.length + index) * 0.2}s` }}
+                >
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-4 border-white bg-slate-300 z-10 flex items-center justify-center">
+                    <span className="text-[8px] font-bold text-slate-500">+</span>
+                  </div>
+                  <div className="bg-white/50 p-6 border-2 border-dashed border-mango-dark/40 hover:border-mango-dark hover:bg-white hover:shadow-[4px_4px_0px_#000] transition-all cursor-pointer group">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-bold text-slate-400">{gap.start} — {gap.end}</span>
+                      <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-bold uppercase group-hover:bg-mango-yellow group-hover:text-mango-dark transition-colors">
+                        + Add Session
+                      </span>
+                    </div>
+                    <p className="text-sm text-slate-400 mt-2 group-hover:text-mango-dark transition-colors">Click to log what happened during this time</p>
                   </div>
                 </div>
               ))}
@@ -424,13 +452,13 @@ export default function Home() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-mango-dark text-mango-yellow rounded flex items-center justify-center font-bold">10K</div>
+              <Image src="/logo.svg" alt="10,000 Hours" width={32} height={32} />
               <span className="font-bold text-xl uppercase italic">10,000HOURS</span>
             </div>
             <p className="font-bold text-xs uppercase tracking-widest text-slate-400">© 2025. Built for those who chase mastery.</p>
           </div>
           <div className="flex flex-wrap justify-center gap-12 text-sm font-black uppercase tracking-widest text-mango-dark">
-            <a className="hover:text-mango-red underline decoration-4 decoration-mango-yellow" href="#">Product</a>
+            <a className="hover:text-mango-red underline decoration-4 decoration-mango-yellow" href="https://lwsnlabs.featurebase.app" target="_blank" rel="noopener noreferrer">Feedback</a>
             <a className="hover:text-mango-red underline decoration-4 decoration-mango-red" href="#">Privacy</a>
             <a className="hover:text-mango-red underline decoration-4 decoration-mango-orange" href="#">Terms</a>
             <a className="hover:text-mango-red underline decoration-4 decoration-mango-dark" href="#">Support</a>

@@ -196,18 +196,18 @@ export default function InsightsPage() {
           <div className="hidden md:flex items-center gap-2">
             <button
               onClick={() => navigateWeek('prev')}
-              className="w-8 h-8 bg-white border-2 border-mango-dark shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[3px_3px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all flex items-center justify-center"
+              className="w-8 h-8 bg-mango-dark text-white border-2 border-mango-dark shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[3px_3px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all flex items-center justify-center"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-5 w-5 stroke-[3]" />
             </button>
             <div className="px-4 py-2 bg-mango-dark text-white font-bold text-sm uppercase">
               {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d')}
             </div>
             <button
               onClick={() => navigateWeek('next')}
-              className="w-8 h-8 bg-white border-2 border-mango-dark shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[3px_3px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all flex items-center justify-center"
+              className="w-8 h-8 bg-mango-dark text-white border-2 border-mango-dark shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[3px_3px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all flex items-center justify-center"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-5 w-5 stroke-[3]" />
             </button>
           </div>
         </div>
@@ -358,7 +358,7 @@ export default function InsightsPage() {
                 
                 {/* Mini Timeline */}
                 <div className="mt-6 grid grid-cols-[60px_1fr] gap-4">
-                  <div className="space-y-8 text-xs font-bold text-slate-400 uppercase">
+                  <div className="space-y-8 text-xs font-bold text-slate-500 uppercase">
                     {[9, 12, 15, 18, 21].map((hour) => (
                       <div key={hour}>
                         <span>{hour.toString().padStart(2, "0")}:00</span>

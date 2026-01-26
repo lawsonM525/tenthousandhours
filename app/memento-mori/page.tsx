@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Navigation } from "@/components/navigation";
 import Link from "next/link";
+import Script from "next/script";
 
 const LIFE_EXPECTANCY = {
   male: 75.8,
@@ -40,8 +41,28 @@ export default function MementoMoriPage() {
     setDaysLeft(null);
   };
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Memento Mori Calculator",
+    "description": "Calculate your remaining days based on life expectancy. A tool to gain perspective on mortality and make every day count.",
+    "url": "https://tenthousandhours.app/memento-mori",
+    "applicationCategory": "LifestyleApplication",
+    "operatingSystem": "Any",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  };
+
   return (
     <div className="min-h-screen mango-pattern text-mango-dark font-sans selection:bg-mango-orange selection:text-white">
+      <Script
+        id="memento-mori-jsonld"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Navigation />
       
       <main className="max-w-4xl mx-auto px-6 py-12 lg:py-20">
