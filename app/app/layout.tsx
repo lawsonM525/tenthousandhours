@@ -33,7 +33,7 @@ export default function AppLayout({
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex lg:flex-col lg:w-72 bg-white border-r-4 border-mango-dark">
         <div className="p-6 border-b-4 border-mango-dark">
-          <Link href="/app" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3">
             <Image 
               src="/logo.svg" 
               alt="10,000 Hours" 

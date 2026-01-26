@@ -114,7 +114,7 @@ export function TimelineShowcase() {
         </h2>
         <p className="text-white/70">
           The timeline makes every hour accountable. Drag to resize, drag to move, or tap an empty slot to log what really
-          happened. Zebra stripes remind you where time is untracked.
+          happened. Catch up on untracked time with a few clicks.
         </p>
         <ul className="space-y-3 text-sm text-white/70">
           <li>• Day and week views with lightning-fast editing</li>
