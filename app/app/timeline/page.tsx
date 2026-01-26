@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog"
 import { useSessions, useUpdateSession, useDeleteSession, useCreateSession } from "@/lib/hooks/use-sessions"
 import { useCategories } from "@/lib/hooks/use-categories"
+import { useNotes, useCreateNote } from "@/lib/hooks/use-notes"
 import { Session, Category } from "@/lib/types"
 import { useToast } from "@/components/ui/use-toast"
 import posthog from 'posthog-js'
@@ -28,6 +29,7 @@ export default function TimelinePage() {
     start: "",
     end: "",
     categoryId: "",
+    note: "",
   })
   
   // Add session state
@@ -167,6 +169,12 @@ export default function TimelinePage() {
     }
   }
   
+  // Fetch note for the editing session
+  const { data: sessionNotes = [] } = useNotes(
+    editingSession ? { sessionId: editingSession._id } : undefined
+  )
+  const createNote = useCreateNote()
+  
   // Open edit dialog for a session
   const openEditDialog = (session: Session) => {
     setEditingSession(session)
@@ -175,9 +183,17 @@ export default function TimelinePage() {
       start: format(new Date(session.start), "yyyy-MM-dd'T'HH:mm"),
       end: session.end ? format(new Date(session.end), "yyyy-MM-dd'T'HH:mm") : "",
       categoryId: session.categoryId,
+      note: "",
     })
     setIsEditOpen(true)
   }
+  
+  // Update note field when session notes load
+  useEffect(() => {
+    if (sessionNotes.length > 0 && isEditOpen) {
+      setEditForm(prev => ({ ...prev, note: sessionNotes[0].body }))
+    }
+  }, [sessionNotes, isEditOpen])
   
   // Handle session update
   const handleUpdateSession = async () => {
@@ -194,10 +210,23 @@ export default function TimelinePage() {
         }
       })
       
+      // Handle note: create new or update existing
+      const existingNote = sessionNotes[0]
+      const noteChanged = editForm.note.trim() !== (existingNote?.body || "")
+      
+      if (editForm.note.trim() && noteChanged) {
+        await createNote.mutateAsync({
+          body: editForm.note.trim(),
+          sessionIds: [editingSession._id],
+          tags: [],
+        })
+      }
+      
       posthog.capture('session_updated', {
         session_id: editingSession._id,
         title_changed: editForm.title !== editingSession.title,
         time_changed: editForm.start !== format(new Date(editingSession.start), "yyyy-MM-dd'T'HH:mm"),
+        note_added: noteChanged && editForm.note.trim().length > 0,
       })
       
       toast({
@@ -637,10 +666,21 @@ export default function TimelinePage() {
               </div>
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="edit-note" className="font-bold uppercase text-sm text-mango-dark">Note (optional)</Label>
+              <textarea 
+                id="edit-note" 
+                placeholder="What did you accomplish? Any reflections?"
+                value={editForm.note}
+                onChange={(e) => setEditForm({ ...editForm, note: e.target.value })}
+                className="w-full min-h-[80px] px-3 py-2 border-2 border-mango-dark bg-white font-medium text-sm resize-none focus:outline-none focus:ring-2 focus:ring-mango-orange"
+              />
+            </div>
+
             <div className="flex gap-3 pt-4">
               <button 
                 onClick={handleUpdateSession} 
-                disabled={!editForm.title.trim() || updateSession.isPending}
+                disabled={!editForm.title.trim() || updateSession.isPending || createNote.isPending}
                 className="flex-1 px-4 py-2 bg-mango-yellow text-mango-dark font-bold uppercase text-sm border-2 border-mango-dark shadow-[3px_3px_0px_#1a1a1a] hover:shadow-[4px_4px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {updateSession.isPending ? "Saving..." : "Save Changes"}
