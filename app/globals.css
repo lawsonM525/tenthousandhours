@@ -95,10 +95,6 @@
   }
   
   /* Chart animations */
-  .animate-grow-up {
-    animation: growUp 0.8s ease-out both;
-  }
-  
   .animate-fade-in {
     animation: fadeIn 0.4s ease-out both;
   }
@@ -109,12 +105,18 @@
   
   @keyframes growUp {
     from { 
-      height: 0;
+      transform: scaleY(0);
       opacity: 0;
     }
     to {
+      transform: scaleY(1);
       opacity: 1;
     }
+  }
+  
+  .animate-grow-up {
+    animation: growUp 0.8s ease-out both;
+    transform-origin: bottom;
   }
   
   @keyframes fadeIn {
@@ -134,6 +136,20 @@
       opacity: 1;
       transform: translateY(0);
     }
+  }
+  
+  @keyframes barDance {
+    0%, 100% {
+      transform: scaleY(1);
+    }
+    50% {
+      transform: scaleY(1.03);
+    }
+  }
+  
+  .animate-bar-dance {
+    animation: barDance 1.5s ease-in-out infinite;
+    transform-origin: bottom;
   }
 }
 

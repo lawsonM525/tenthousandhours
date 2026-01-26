@@ -33,7 +33,6 @@ const timelineBlocks = [
 
 const timelineGaps = [
   { start: "12:45", end: "13:30", label: "Untracked time" },
-  { start: "13:30", end: "14:00", label: "Untracked time" },
 ];
 
 const _weeklyData = [
@@ -100,15 +99,18 @@ export default function Home() {
             <span className="font-bold text-sm uppercase">Time truth &gt; focus hacks</span>
           </div>
           
-          {/* Hero Headline - Full Width */}
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black leading-[0.95] uppercase text-white drop-shadow-[4px_4px_0px_#1a1a1a] mb-12">
+          {/* Hero Headlines - Full Width */}
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black leading-[0.95] uppercase text-white drop-shadow-[4px_4px_0px_#1a1a1a] mb-4">
             Log your <span className="text-mango-yellow italic underline decoration-mango-red decoration-4">Whole</span> day,
           </h1>
+          <h2 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black leading-[0.95] uppercase text-white drop-shadow-[4px_4px_0px_#1a1a1a] mb-12">
+            see the <span className="text-mango-orange">Truth.</span>
+          </h2>
           
-          {/* Two Column: Chart + Content */}
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-            {/* Left: Daily Distribution Chart */}
-            <div className="distressed-card p-6 lg:p-8 rounded-sm -rotate-1">
+          {/* Chart + CTA */}
+          <div className="space-y-6">
+            {/* Daily Distribution Chart */}
+            <div className="distressed-card p-6 lg:p-8 rounded-sm rotate-1 max-w-6xl">
               <div className="flex justify-between items-center mb-6">
                 <div className="bg-mango-dark text-white px-3 py-1 text-xs font-bold uppercase">
                   Daily Distribution
@@ -116,70 +118,92 @@ export default function Home() {
                 <div className="text-xs font-bold uppercase text-slate-500">This week</div>
               </div>
               
-              {/* Animated Bar Chart */}
-              <div className="relative h-48 lg:h-56">
+              {/* Bar Chart */}
+              <div className="relative">
                 {/* Average line */}
-                <div className="absolute left-0 right-0 top-[35%] border-t-2 border-dashed border-slate-300 z-10">
-                  <span className="absolute right-0 -top-5 text-[10px] font-bold text-slate-400 uppercase">7h 34m avg</span>
+                <div className="absolute left-0 right-0 top-[100px] border-t-2 border-dashed border-slate-300 z-10">
+                  <span className="absolute right-0 -top-5 text-[10px] font-bold text-slate-500 uppercase">7h 34m avg</span>
                 </div>
                 
                 {/* Bars Container */}
-                <div className="flex items-end justify-between h-full gap-2 lg:gap-3">
+                <div className="flex items-end gap-2 lg:gap-3 pb-2">
                   {[
-                    { day: "MON", total: "10h 13m", height: 90, segments: [
-                      { percent: 28, color: "#E62E2D" },
-                      { percent: 22, color: "#16C7A8" },
-                      { percent: 17, color: "#9373FF" },
-                      { percent: 22, color: "#06B6D4" },
-                      { percent: 11, color: "#3A8DFF" },
+                    { day: "MON", total: "10h 13m", height: 240, segments: [
+                      { height: 65, color: "bg-mango-red", category: "Coding", time: "2h 30m" },
+                      { height: 55, color: "bg-[#16C7A8]", category: "Design", time: "2h" },
+                      { height: 40, color: "bg-[#9373FF]", category: "Learning", time: "1h 30m" },
+                      { height: 55, color: "bg-[#06B6D4]", category: "Planning", time: "2h" },
+                      { height: 25, color: "bg-[#3A8DFF]", category: "Meetings", time: "1h" },
                     ]},
-                    { day: "TUE", total: "9h 31m", height: 82, segments: [
-                      { percent: 44, color: "#E62E2D" },
-                      { percent: 19, color: "#16C7A8" },
-                      { percent: 25, color: "#9373FF" },
-                      { percent: 12, color: "#06B6D4" },
+                    { day: "TUE", total: "9h 31m", height: 215, segments: [
+                      { height: 95, color: "bg-mango-red", category: "Coding", time: "4h" },
+                      { height: 40, color: "bg-[#16C7A8]", category: "Design", time: "1h 45m" },
+                      { height: 55, color: "bg-[#9373FF]", category: "Learning", time: "2h 20m" },
+                      { height: 25, color: "bg-[#06B6D4]", category: "Planning", time: "1h 10m" },
                     ]},
-                    { day: "WED", total: "5h 34m", height: 50, segments: [
-                      { percent: 44, color: "#16C7A8" },
-                      { percent: 33, color: "#FFB31A" },
-                      { percent: 23, color: "#3A8DFF" },
+                    { day: "WED", total: "5h 34m", height: 135, segments: [
+                      { height: 60, color: "bg-[#16C7A8]", category: "Design", time: "2h 30m" },
+                      { height: 50, color: "bg-mango-orange", category: "Writing", time: "2h" },
+                      { height: 25, color: "bg-[#3A8DFF]", category: "Meetings", time: "1h" },
                     ]},
-                    { day: "THU", total: "4h 57m", height: 42, segments: [
-                      { percent: 43, color: "#16C7A8" },
-                      { percent: 34, color: "#FFB31A" },
-                      { percent: 23, color: "#3A8DFF" },
+                    { day: "THU", total: "4h 57m", height: 115, segments: [
+                      { height: 50, color: "bg-[#16C7A8]", category: "Design", time: "2h" },
+                      { height: 40, color: "bg-mango-orange", category: "Writing", time: "1h 45m" },
+                      { height: 25, color: "bg-[#3A8DFF]", category: "Meetings", time: "1h 10m" },
                     ]},
-                    { day: "FRI", total: "6h 20m", height: 58, segments: [
-                      { percent: 50, color: "#16C7A8" },
-                      { percent: 30, color: "#E62E2D" },
-                      { percent: 20, color: "#9373FF" },
+                    { day: "FRI", total: "6h 20m", height: 155, segments: [
+                      { height: 75, color: "bg-[#16C7A8]", category: "Design", time: "3h" },
+                      { height: 50, color: "bg-mango-red", category: "Coding", time: "2h" },
+                      { height: 30, color: "bg-[#9373FF]", category: "Learning", time: "1h 20m" },
                     ]},
-                    { day: "SAT", total: "3h 45m", height: 32, segments: [
-                      { percent: 40, color: "#9373FF" },
-                      { percent: 33, color: "#06B6D4" },
-                      { percent: 27, color: "#FFD600" },
+                    { day: "SAT", total: "3h 45m", height: 90, segments: [
+                      { height: 35, color: "bg-[#9373FF]", category: "Learning", time: "1h 30m" },
+                      { height: 30, color: "bg-[#06B6D4]", category: "Planning", time: "1h 15m" },
+                      { height: 25, color: "bg-mango-yellow", category: "Personal", time: "1h" },
                     ]},
-                    { day: "SUN", total: "2h 10m", height: 20, segments: [
-                      { percent: 55, color: "#06B6D4" },
-                      { percent: 45, color: "#FFD600" },
+                    { day: "SUN", total: "2h 10m", height: 55, segments: [
+                      { height: 30, color: "bg-[#06B6D4]", category: "Planning", time: "1h 15m" },
+                      { height: 25, color: "bg-mango-yellow", category: "Personal", time: "55m" },
                     ]},
-                  ].map((day) => (
-                    <div key={day.day} className="flex-1 flex flex-col items-center">
+                  ].map((day, dayIndex) => (
+                    <div key={day.day} className="flex-1 flex flex-col items-center group/bar">
                       {/* Stacked Bar */}
                       <div 
-                        className="w-full bg-slate-200 border-2 border-mango-dark flex flex-col-reverse overflow-hidden animate-grow-up"
-                        style={{ height: `${day.height}%` }}
+                        className="w-full border-2 border-mango-dark flex flex-col-reverse animate-grow-up animate-bar-dance hover:scale-105 hover:shadow-[4px_4px_0px_#1a1a1a] transition-all cursor-pointer relative"
+                        style={{ 
+                          height: `${day.height}px`,
+                          animationDelay: `${dayIndex * 0.4}s`
+                        }}
                       >
                         {day.segments.map((segment, segIndex) => (
                           <div 
                             key={segIndex}
-                            className="w-full animate-fade-in"
-                            style={{ height: `${segment.percent}%`, backgroundColor: segment.color }}
+                            className={`${segment.color} w-full animate-fade-in group/segment hover:brightness-110`}
+                            style={{ 
+                              height: `${segment.height}px`,
+                              animationDelay: `${dayIndex * 0.1 + segIndex * 0.08 + 0.2}s`
+                            }}
                           />
                         ))}
+                        {/* Tooltip - positioned outside the bar */}
+                        <div className="absolute left-1/2 -translate-x-1/2 -top-2 -translate-y-full opacity-0 group-hover/bar:opacity-100 transition-opacity pointer-events-none z-50">
+                          <div className="bg-mango-dark text-white px-3 py-2 text-[10px] font-bold uppercase whitespace-nowrap border-2 border-white/20 shadow-[2px_2px_0px_#000]">
+                            <div className="space-y-1">
+                              {day.segments.slice().reverse().map((seg, i) => (
+                                <div key={i} className="flex items-center gap-2">
+                                  <div className={`w-2 h-2 ${seg.color}`} />
+                                  <span>{seg.category}: {seg.time}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
                       </div>
                       {/* Labels */}
-                      <div className="mt-2 text-center">
+                      <div 
+                        className="mt-2 text-center animate-fade-in"
+                        style={{ animationDelay: `${dayIndex * 0.1 + 0.3}s` }}
+                      >
                         <div className="text-[10px] font-bold text-mango-dark">{day.total}</div>
                         <div className="text-xs font-black uppercase text-slate-500">{day.day}</div>
                       </div>
@@ -189,53 +213,28 @@ export default function Home() {
               </div>
             </div>
             
-            {/* Right: "see the Truth" + Explainer + CTA */}
-            <div className="space-y-6 lg:space-y-8">
-              <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black leading-[0.95] uppercase text-white drop-shadow-[4px_4px_0px_#1a1a1a]">
-                see the <span className="text-mango-orange">Truth.</span>
-              </h2>
-              
-              <p className="text-lg lg:text-xl font-medium text-mango-dark bg-white/40 p-5 lg:p-6 border-l-4 border-mango-dark backdrop-blur-sm">
-                10,000hours is the mastery ledger for people who want awareness over distractions. Track every minute, capture the story, and master what matters.
-              </p>
-              
-              <div className="flex flex-wrap gap-4">
-                <SignedOut>
-                  <CTAButton
-                    variant="primary"
-                    ctaName="Get Started"
-                    ctaLocation="hero"
-                    isSignUp={true}
-                  >
-                    Get Started
-                  </CTAButton>
-                  <CTAButton
-                    variant="secondary"
-                    ctaName="View Demo"
-                    ctaLocation="hero"
-                  >
-                    View Demo
-                  </CTAButton>
-                </SignedOut>
-                <SignedIn>
-                  <CTAButton
-                    href="/app/now"
-                    variant="primary"
-                    ctaName="Get Started"
-                    ctaLocation="hero"
-                  >
-                    Get Started
-                  </CTAButton>
-                  <CTAButton
-                    href="/app/now"
-                    variant="secondary"
-                    ctaName="View Demo"
-                    ctaLocation="hero"
-                  >
-                    View Demo
-                  </CTAButton>
-                </SignedIn>
-              </div>
+            {/* CTA */}
+            <div className="flex justify-start">
+              <SignedOut>
+                <CTAButton
+                  variant="primary"
+                  ctaName="Get Started"
+                  ctaLocation="hero"
+                  isSignUp={true}
+                >
+                  Get Started
+                </CTAButton>
+              </SignedOut>
+              <SignedIn>
+                <CTAButton
+                  href="/app/now"
+                  variant="primary"
+                  ctaName="Get Started"
+                  ctaLocation="hero"
+                >
+                  Get Started
+                </CTAButton>
+              </SignedIn>
             </div>
           </div>
         </div>
