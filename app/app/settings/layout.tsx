@@ -31,12 +31,9 @@ export default function SettingsLayout({
   const pathname = usePathname()
 
   return (
-    <div className="h-full flex">
-      <aside className="w-72 shrink-0 border-r-4 border-mango-dark bg-white overflow-auto">
-        <div className="p-4">
-          <h2 className="text-xs uppercase tracking-wider text-slate-500 font-bold px-2">settings</h2>
-        </div>
-        <nav className="px-2 pb-4 space-y-1">
+    <div className="h-full flex flex-col">
+      <nav className="shrink-0 border-b-4 border-mango-dark bg-white overflow-x-auto">
+        <div className="flex items-center gap-1 p-2">
           {settingsNav.map((item) => {
             const isActive = pathname === item.href || pathname?.startsWith(item.href + "/")
             const Icon = item.icon
@@ -45,19 +42,19 @@ export default function SettingsLayout({
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 font-bold uppercase text-sm transition-all",
+                  "flex items-center gap-2 px-3 py-2 font-bold uppercase text-xs whitespace-nowrap transition-all",
                   isActive
                     ? "bg-mango-dark text-white shadow-[2px_2px_0px_#FFB31A]"
                     : "text-mango-dark hover:bg-mango-yellow/20"
                 )}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className="w-4 h-4" />
                 <span className="capitalize">{item.name}</span>
               </Link>
             )
           })}
-        </nav>
-      </aside>
+        </div>
+      </nav>
 
       <main className="flex-1 min-w-0 overflow-auto">
         {children}

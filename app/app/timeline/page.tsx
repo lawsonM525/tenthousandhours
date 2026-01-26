@@ -558,7 +558,7 @@ export default function TimelinePage() {
               </div>
             </div>
           ) : (
-            /* Week View */
+            /* Week View - Calendar Style */
             <div className="space-y-4">
               {/* Summary */}
               <div className="distressed-card p-3 sm:p-4">
@@ -579,56 +579,91 @@ export default function TimelinePage() {
                 </div>
               </div>
               
-              {/* Week Grid */}
-              <div className="distressed-card p-3 sm:p-6">
-                <div className="space-y-3 sm:space-y-4">
-                  {eachDayOfInterval({ start: dateRange.start, end: dateRange.end }).map((day) => {
-                    const daySessions = sessions.filter(s => isSameDay(new Date(s.start), day))
-                    const dayMinutes = daySessions.reduce((sum, s) => sum + (s.durationMin || 0), 0)
-                    
-                    return (
-                      <div key={day.toISOString()} className="border-2 border-mango-dark/20 p-3 sm:p-4">
-                        <div className="flex items-center justify-between mb-2 sm:mb-3">
-                          <div className="flex items-center gap-2">
-                            <span className={`font-black text-sm sm:text-lg uppercase ${isToday(day) ? 'text-mango-orange' : 'text-mango-dark'}`}>
-                              {format(day, 'EEE')}
-                            </span>
-                            <span className="text-xs sm:text-sm text-slate-500 font-bold">
-                              {format(day, 'MMM d')}
-                            </span>
-                            {isToday(day) && (
-                              <span className="px-1.5 py-0.5 bg-mango-orange text-white text-[10px] font-bold uppercase">Today</span>
-                            )}
+              {/* Week Calendar Grid */}
+              <div className="distressed-card p-2 sm:p-4 overflow-x-auto">
+                <div className="min-w-[600px]">
+                  {/* Day headers */}
+                  <div className="grid grid-cols-[50px_repeat(7,1fr)] gap-0 border-b-2 border-mango-dark/20 pb-2 mb-2">
+                    <div></div>
+                    {eachDayOfInterval({ start: dateRange.start, end: dateRange.end }).map((day) => (
+                      <div key={day.toISOString()} className="text-center">
+                        <p className={`text-[10px] sm:text-xs font-black uppercase ${isToday(day) ? 'text-mango-orange' : 'text-slate-500'}`}>
+                          {format(day, 'EEE')}
+                        </p>
+                        <p className={`text-sm sm:text-lg font-black ${isToday(day) ? 'text-mango-orange' : 'text-mango-dark'}`}>
+                          {format(day, 'd')}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Hour rows with session blocks */}
+                  <div className="relative">
+                    <div className="grid grid-cols-[50px_repeat(7,1fr)] gap-0">
+                      {/* Hour labels and grid */}
+                      {Array.from({ length: 24 }).map((_, hour) => (
+                        <div key={hour} className="contents">
+                          <div className="h-8 flex items-start justify-end pr-2 text-[10px] font-bold text-slate-400">
+                            {hour.toString().padStart(2, '0')}:00
                           </div>
-                          <span className="text-xs sm:text-sm font-bold text-slate-500">
-                            {formatDuration(dayMinutes)}
-                          </span>
+                          {eachDayOfInterval({ start: dateRange.start, end: dateRange.end }).map((day) => (
+                            <div 
+                              key={`${day.toISOString()}-${hour}`} 
+                              className="h-8 border-l border-b border-mango-dark/10 relative"
+                            />
+                          ))}
                         </div>
+                      ))}
+                    </div>
+                    
+                    {/* Session blocks overlay */}
+                    <div className="absolute inset-0 grid grid-cols-[50px_repeat(7,1fr)] gap-0 pointer-events-none">
+                      <div></div>
+                      {eachDayOfInterval({ start: dateRange.start, end: dateRange.end }).map((day, dayIndex) => {
+                        const daySessions = sessions.filter(s => isSameDay(new Date(s.start), day))
                         
-                        {daySessions.length === 0 ? (
-                          <p className="text-xs sm:text-sm text-slate-400 italic">No sessions logged</p>
-                        ) : (
-                          <div className="flex flex-wrap gap-2">
+                        return (
+                          <div key={day.toISOString()} className="relative">
                             {daySessions.map((session) => {
                               const category = categoryMap.get(session.categoryId)
                               const color = category ? colorHex[category.color] : '#666'
+                              const startTime = new Date(session.start)
+                              const startHour = startTime.getHours()
+                              const startMinutes = startTime.getMinutes()
+                              const topOffset = (startHour * 32) + (startMinutes / 60 * 32)
+                              const durationMinutes = session.durationMin || 0
+                              const height = Math.max((durationMinutes / 60) * 32, 16)
                               
                               return (
-                                <button
+                                <div
                                   key={session._id}
                                   onClick={() => openEditDialog(session)}
-                                  className="px-2 sm:px-3 py-1 sm:py-1.5 border-2 border-mango-dark text-white text-[10px] sm:text-xs font-bold uppercase shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[3px_3px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all truncate max-w-[150px] sm:max-w-[200px]"
-                                  style={{ backgroundColor: color }}
+                                  className="absolute left-0.5 right-0.5 border border-mango-dark/50 cursor-pointer hover:shadow-md transition-shadow overflow-hidden pointer-events-auto"
+                                  style={{
+                                    top: `${topOffset}px`,
+                                    height: `${height}px`,
+                                    backgroundColor: color,
+                                  }}
                                 >
-                                  {session.title}
-                                </button>
+                                  <div className="p-0.5 text-[8px] text-white font-bold leading-tight truncate">
+                                    {format(startTime, 'HH:mm')}
+                                  </div>
+                                  <div className="px-0.5 text-[8px] text-white/90 font-bold leading-tight truncate">
+                                    {session.title}
+                                  </div>
+                                  {category && height > 40 && (
+                                    <div className="px-0.5 text-[7px] text-white/70 font-bold uppercase truncate">
+                                      {category.name}
+                                    </div>
+                                  )}
+                                </div>
                               )
                             })}
                           </div>
-                        )}
-                      </div>
-                    )
-                  })}
+                        )
+                      })}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

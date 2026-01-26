@@ -14,7 +14,7 @@ import {
 import { cn } from "@/lib/utils"
 
 const navigation = [
-  { name: "Focus", href: "/app/now", icon: Clock, color: "mango-red" },
+  { name: "Track", href: "/app/now", icon: Clock, color: "mango-red" },
   { name: "Timeline", href: "/app/timeline", icon: Calendar, color: "mango-orange" },
   { name: "Insights", href: "/app/insights", icon: BarChart3, color: "mango-yellow" },
   { name: "Notes", href: "/app/notes", icon: FileText, color: "mango-green" },

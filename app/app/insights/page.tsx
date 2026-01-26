@@ -38,10 +38,12 @@ export default function InsightsPage() {
   })
   
   // Fetch sessions for streak calculation (last 30 days)
-  const thirtyDaysAgo = subDays(new Date(), 30)
+  // Use startOfDay to create stable date references that don't change on every render
+  const today = useMemo(() => startOfDay(new Date()), [])
+  const thirtyDaysAgo = useMemo(() => subDays(today, 30), [today])
   const { data: recentSessions = [] } = useSessions({
     startDate: thirtyDaysAgo.toISOString(),
-    endDate: new Date().toISOString()
+    endDate: endOfDay(today).toISOString()
   })
   
   // Fetch sessions for selected day
@@ -112,14 +114,13 @@ export default function InsightsPage() {
       }
     })
     
-    // Calculate focus/break ratio
+    // Calculate focus time (only mastery sessions)
     const focusMinutes = weekSessions
       .filter(s => categoryMap.get(s.categoryId)?.type !== 'other')
       .reduce((sum, s) => sum + (s.durationMin || 0), 0)
-    const breakMinutes = weekSessions
-      .filter(s => categoryMap.get(s.categoryId)?.type === 'other')
-      .reduce((sum, s) => sum + (s.durationMin || 0), 0)
-    const focusBreakRatio = breakMinutes > 0 ? (focusMinutes / breakMinutes).toFixed(1) : focusMinutes > 0 ? '∞' : '0'
+    
+    // Focus rate = focus hours / total hours
+    const focusRate = totalMinutes > 0 ? Math.round((focusMinutes / totalMinutes) * 100) : 0
     
     // Best and worst day
     const dayMinutes = new Map<string, { date: Date, minutes: number }>()
@@ -141,9 +142,10 @@ export default function InsightsPage() {
     
     return {
       totalMinutes,
+      focusMinutes,
+      focusRate,
       avgMinutesPerDay,
       mostProductiveHour,
-      focusBreakRatio,
       sessionCount,
       avgSessionLength,
       totalChange,
@@ -379,28 +381,28 @@ export default function InsightsPage() {
                   )}
                 </div>
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                  <div className="p-4 bg-mango-red/10 border-2 border-mango-red">
-                    <p className="text-[10px] uppercase font-black text-mango-red tracking-wider">Total Focus</p>
+                  <div className="p-4 bg-slate-100 border-2 border-slate-400">
+                    <p className="text-[10px] uppercase font-black text-slate-500 tracking-wider">Total Time</p>
                     <p className="mt-2 text-2xl font-black text-mango-dark">
                       {formatDuration(stats.totalMinutes)}
                     </p>
                   </div>
-                  <div className="p-4 bg-mango-orange/10 border-2 border-mango-orange">
-                    <p className="text-[10px] uppercase font-black text-mango-orange tracking-wider">Avg Focus/Day</p>
+                  <div className="p-4 bg-mango-red/10 border-2 border-mango-red">
+                    <p className="text-[10px] uppercase font-black text-mango-red tracking-wider">Focus Time</p>
                     <p className="mt-2 text-2xl font-black text-mango-dark">
-                      {formatDuration(Math.round(stats.avgMinutesPerDay))}
-                    </p>
-                  </div>
-                  <div className="p-4 bg-mango-yellow/10 border-2 border-mango-yellow">
-                    <p className="text-[10px] uppercase font-black text-mango-dark tracking-wider">Most Focused</p>
-                    <p className="mt-2 text-2xl font-black text-mango-dark">
-                      {formatHour(stats.mostProductiveHour)}
+                      {formatDuration(stats.focusMinutes)}
                     </p>
                   </div>
                   <div className="p-4 bg-mango-green/10 border-2 border-mango-green">
-                    <p className="text-[10px] uppercase font-black text-mango-green tracking-wider">Focus/Break</p>
+                    <p className="text-[10px] uppercase font-black text-mango-green tracking-wider">Focus Rate</p>
                     <p className="mt-2 text-2xl font-black text-mango-dark">
-                      {stats.focusBreakRatio} / 1
+                      {stats.focusRate}%
+                    </p>
+                  </div>
+                  <div className="p-4 bg-mango-yellow/10 border-2 border-mango-yellow">
+                    <p className="text-[10px] uppercase font-black text-mango-dark tracking-wider">Peak Hour</p>
+                    <p className="mt-2 text-2xl font-black text-mango-dark">
+                      {formatHour(stats.mostProductiveHour)}
                     </p>
                   </div>
                 </div>

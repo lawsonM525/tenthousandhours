@@ -8,21 +8,7 @@ export default function SupportSettingsPage() {
       href: "https://lwsnlabs.featurebase.app",
       icon: MessageSquare,
       color: "bg-mango-yellow",
-    },
-    {
-      title: "Email Support",
-      description: "Get help from our team directly",
-      href: "mailto:support@tenthousandhours.app",
-      icon: Mail,
-      color: "bg-mango-orange",
-    },
-    {
-      title: "Documentation",
-      description: "Learn how to use 10,000 Hours effectively",
-      href: "#",
-      icon: FileText,
-      color: "bg-mango-green",
-    },
+    }, 
   ]
 
   return (
