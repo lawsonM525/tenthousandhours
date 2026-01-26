@@ -31,15 +31,15 @@ export default function NowPage() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <header className="bg-white border-b-4 border-mango-dark px-6 py-4">
+      <header className="bg-white border-b-4 border-mango-dark px-4 sm:px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div>
             <div className="inline-block bg-mango-red px-3 py-1 border-2 border-mango-dark transform -rotate-1 mb-2">
               <span className="font-bold text-xs uppercase text-white">Deep Work Mode</span>
             </div>
-            <h1 className="text-3xl font-black uppercase text-mango-dark">Session Timer</h1>
+            <h1 className="text-2xl sm:text-3xl font-black uppercase text-mango-dark">Session Timer</h1>
           </div>
-          <div className="flex gap-1">
+          <div className="hidden sm:flex gap-1">
             <div className="w-3 h-3 rounded-full bg-mango-red"></div>
             <div className="w-3 h-3 rounded-full bg-mango-orange"></div>
             <div className="w-3 h-3 rounded-full bg-mango-yellow"></div>

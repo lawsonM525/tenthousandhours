@@ -60,24 +60,22 @@ export default function NotesPage() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <header className="bg-white border-b-4 border-mango-dark px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+      <header className="bg-white border-b-4 border-mango-dark px-4 sm:px-6 py-4">
+        <div className="max-w-4xl mx-auto space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
           <div>
             <div className="inline-block bg-mango-green px-3 py-1 border-2 border-mango-dark transform -rotate-1 mb-2">
               <span className="font-bold text-xs uppercase text-white">Capture The Story</span>
             </div>
-            <h1 className="text-3xl font-black uppercase text-mango-dark">Notes</h1>
+            <h1 className="text-2xl sm:text-3xl font-black uppercase text-mango-dark">Notes</h1>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-mango-dark/50" />
-              <Input
-                placeholder="Search notes..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 w-64 border-2 border-mango-dark bg-white font-medium"
-              />
-            </div>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-mango-dark/50" />
+            <Input
+              placeholder="Search notes..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10 w-full sm:w-64 border-2 border-mango-dark bg-white font-medium"
+            />
           </div>
         </div>
       </header>

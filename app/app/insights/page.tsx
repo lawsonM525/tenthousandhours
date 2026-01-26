@@ -263,23 +263,26 @@ export default function InsightsPage() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <header className="bg-white border-b-4 border-mango-dark px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div>
-            <div className="inline-block bg-mango-yellow px-3 py-1 border-2 border-mango-dark transform -rotate-1 mb-2">
-              <span className="font-bold text-xs uppercase text-mango-dark">Analytics That Matter</span>
+      <header className="bg-white border-b-4 border-mango-dark px-4 sm:px-6 py-4">
+        <div className="max-w-6xl mx-auto space-y-3">
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="inline-block bg-mango-yellow px-3 py-1 border-2 border-mango-dark transform -rotate-1 mb-2">
+                <span className="font-bold text-xs uppercase text-mango-dark">Analytics That Matter</span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-black uppercase text-mango-dark">Insights</h1>
+              <p className="text-xs sm:text-sm font-medium text-slate-500 mt-1 hidden sm:block">Truth over vibes. Here&apos;s where your week actually went.</p>
             </div>
-            <h1 className="text-3xl font-black uppercase text-mango-dark">Insights</h1>
-            <p className="text-sm font-medium text-slate-500 mt-1">Truth over vibes. Here&apos;s where your week actually went.</p>
           </div>
-          <div className="hidden md:flex items-center gap-2">
+          {/* Week navigation - visible on all screens */}
+          <div className="flex items-center justify-center gap-2">
             <button
               onClick={() => navigateWeek('prev')}
               className="w-8 h-8 bg-mango-dark text-white border-2 border-mango-dark shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[3px_3px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all flex items-center justify-center"
             >
               <ChevronLeft className="h-5 w-5 stroke-[3]" />
             </button>
-            <div className="px-4 py-2 bg-mango-dark text-white font-bold text-sm uppercase">
+            <div className="px-3 sm:px-4 py-2 bg-mango-dark text-white font-bold text-xs sm:text-sm uppercase">
               {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d')}
             </div>
             <button

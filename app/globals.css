@@ -158,3 +158,35 @@
     text-wrap: balance;
   }
 }
+
+/* Prevent zoom on input focus on iOS */
+@supports (-webkit-touch-callout: none) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Ensure proper viewport behavior */
+html {
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Prevent horizontal scroll on mobile */
+.h-screen {
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* Fix dialog/modal positioning on mobile */
+[role="dialog"] {
+  max-height: 90vh;
+  max-height: 90dvh;
+  overflow-y: auto;
+}
