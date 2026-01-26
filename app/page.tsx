@@ -93,100 +93,148 @@ export default function Home() {
       <Navigation />
       
       <main className="max-w-7xl mx-auto px-6 py-12 lg:py-20">
-        {/* Hero Section */}
-        <div className="grid lg:grid-cols-2 gap-12 items-center mb-32">
-          {/* Left: Hero Text */}
-          <div className="space-y-8">
-            <div className="inline-block bg-mango-yellow px-4 py-1 border-2 border-mango-dark transform -rotate-1">
-              <span className="font-bold text-sm uppercase">Time truth &gt; focus hacks</span>
-            </div>
-            
-            <h1 className="text-6xl lg:text-7xl xl:text-8xl font-black leading-none uppercase text-white drop-shadow-[4px_4px_0px_#1a1a1a]">
-              Log your <br/>
-              <span className="text-mango-yellow italic underline decoration-mango-red">Whole</span> day, <br/>
-              see the <span className="text-mango-orange">Truth.</span>
-            </h1>
-            
-            <p className="text-xl font-medium text-mango-dark bg-white/40 p-6 border-l-4 border-mango-dark backdrop-blur-sm max-w-xl">
-              10,000hours is the mastery ledger for people who want awareness over distractions. Track every minute, capture the story, and master what matters.
-            </p>
-            
-            <div className="flex flex-wrap gap-4">
-              <SignedOut>
-                <CTAButton
-                  variant="primary"
-                  ctaName="Get Started"
-                  ctaLocation="hero"
-                  isSignUp={true}
-                >
-                  Get Started
-                </CTAButton>
-                <CTAButton
-                  variant="secondary"
-                  ctaName="View Demo"
-                  ctaLocation="hero"
-                >
-                  View Demo
-                </CTAButton>
-              </SignedOut>
-              <SignedIn>
-                <CTAButton
-                  href="/app/now"
-                  variant="primary"
-                  ctaName="Get Started"
-                  ctaLocation="hero"
-                >
-                  Get Started
-                </CTAButton>
-                <CTAButton
-                  href="/app/now"
-                  variant="secondary"
-                  ctaName="View Demo"
-                  ctaLocation="hero"
-                >
-                  View Demo
-                </CTAButton>
-              </SignedIn>
-            </div>
+        {/* Hero Section - Full Width */}
+        <div className="mb-32">
+          {/* Top: Badge */}
+          <div className="inline-block bg-mango-yellow px-4 py-1 border-2 border-mango-dark transform -rotate-1 mb-6">
+            <span className="font-bold text-sm uppercase">Time truth &gt; focus hacks</span>
           </div>
           
-          {/* Right: Mastery Insights Card */}
-          <div className="distressed-card p-8 rounded-sm rotate-1">
-            <div className="flex justify-between items-center mb-8">
-              <h3 className="font-black text-3xl uppercase">Mastery Insights</h3>
-              <div className="flex gap-1">
-                <div className="w-3 h-3 rounded-full bg-mango-red"></div>
-                <div className="w-3 h-3 rounded-full bg-mango-orange"></div>
-                <div className="w-3 h-3 rounded-full bg-mango-yellow"></div>
+          {/* Hero Headline - Full Width */}
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black leading-[0.95] uppercase text-white drop-shadow-[4px_4px_0px_#1a1a1a] mb-12">
+            Log your <span className="text-mango-yellow italic underline decoration-mango-red decoration-4">Whole</span> day,
+          </h1>
+          
+          {/* Two Column: Chart + Content */}
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+            {/* Left: Daily Distribution Chart */}
+            <div className="distressed-card p-6 lg:p-8 rounded-sm -rotate-1">
+              <div className="flex justify-between items-center mb-6">
+                <div className="bg-mango-dark text-white px-3 py-1 text-xs font-bold uppercase">
+                  Daily Distribution
+                </div>
+                <div className="text-xs font-bold uppercase text-slate-500">This week</div>
+              </div>
+              
+              {/* Animated Bar Chart */}
+              <div className="relative h-48 lg:h-56">
+                {/* Average line */}
+                <div className="absolute left-0 right-0 top-[35%] border-t-2 border-dashed border-slate-300 z-10">
+                  <span className="absolute right-0 -top-5 text-[10px] font-bold text-slate-400 uppercase">7h 34m avg</span>
+                </div>
+                
+                {/* Bars Container */}
+                <div className="flex items-end justify-between h-full gap-2 lg:gap-3">
+                  {[
+                    { day: "MON", total: "10h 13m", height: 90, segments: [
+                      { percent: 28, color: "#E62E2D" },
+                      { percent: 22, color: "#16C7A8" },
+                      { percent: 17, color: "#9373FF" },
+                      { percent: 22, color: "#06B6D4" },
+                      { percent: 11, color: "#3A8DFF" },
+                    ]},
+                    { day: "TUE", total: "9h 31m", height: 82, segments: [
+                      { percent: 44, color: "#E62E2D" },
+                      { percent: 19, color: "#16C7A8" },
+                      { percent: 25, color: "#9373FF" },
+                      { percent: 12, color: "#06B6D4" },
+                    ]},
+                    { day: "WED", total: "5h 34m", height: 50, segments: [
+                      { percent: 44, color: "#16C7A8" },
+                      { percent: 33, color: "#FFB31A" },
+                      { percent: 23, color: "#3A8DFF" },
+                    ]},
+                    { day: "THU", total: "4h 57m", height: 42, segments: [
+                      { percent: 43, color: "#16C7A8" },
+                      { percent: 34, color: "#FFB31A" },
+                      { percent: 23, color: "#3A8DFF" },
+                    ]},
+                    { day: "FRI", total: "6h 20m", height: 58, segments: [
+                      { percent: 50, color: "#16C7A8" },
+                      { percent: 30, color: "#E62E2D" },
+                      { percent: 20, color: "#9373FF" },
+                    ]},
+                    { day: "SAT", total: "3h 45m", height: 32, segments: [
+                      { percent: 40, color: "#9373FF" },
+                      { percent: 33, color: "#06B6D4" },
+                      { percent: 27, color: "#FFD600" },
+                    ]},
+                    { day: "SUN", total: "2h 10m", height: 20, segments: [
+                      { percent: 55, color: "#06B6D4" },
+                      { percent: 45, color: "#FFD600" },
+                    ]},
+                  ].map((day) => (
+                    <div key={day.day} className="flex-1 flex flex-col items-center">
+                      {/* Stacked Bar */}
+                      <div 
+                        className="w-full bg-slate-200 border-2 border-mango-dark flex flex-col-reverse overflow-hidden animate-grow-up"
+                        style={{ height: `${day.height}%` }}
+                      >
+                        {day.segments.map((segment, segIndex) => (
+                          <div 
+                            key={segIndex}
+                            className="w-full animate-fade-in"
+                            style={{ height: `${segment.percent}%`, backgroundColor: segment.color }}
+                          />
+                        ))}
+                      </div>
+                      {/* Labels */}
+                      <div className="mt-2 text-center">
+                        <div className="text-[10px] font-bold text-mango-dark">{day.total}</div>
+                        <div className="text-xs font-black uppercase text-slate-500">{day.day}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
             
-            <div className="space-y-8">
-              {/* Circular Progress */}
-              <div className="flex items-center justify-center py-10">
-                <div className="relative w-64 h-64">
-                  <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" fill="none" r="40" stroke="#f0f0f0" strokeWidth="12" />
-                    <circle cx="50" cy="50" fill="none" r="40" stroke="#E62E2D" strokeDasharray="251.2" strokeDashoffset="60" strokeWidth="12" />
-                    <circle cx="50" cy="50" fill="none" r="30" stroke="#FFB31A" strokeDasharray="188.4" strokeDashoffset="100" strokeWidth="12" />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="font-black text-5xl">84%</span>
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Focus Rate</span>
-                  </div>
-                </div>
-              </div>
+            {/* Right: "see the Truth" + Explainer + CTA */}
+            <div className="space-y-6 lg:space-y-8">
+              <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black leading-[0.95] uppercase text-white drop-shadow-[4px_4px_0px_#1a1a1a]">
+                see the <span className="text-mango-orange">Truth.</span>
+              </h2>
               
-              {/* Stats Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-mango-red/10 border-2 border-mango-red rounded-sm">
-                  <div className="text-[10px] uppercase font-black text-mango-red">Deep Work</div>
-                  <div className="text-2xl font-black uppercase">06:42</div>
-                </div>
-                <div className="p-4 bg-mango-orange/10 border-2 border-mango-orange rounded-sm">
-                  <div className="text-[10px] uppercase font-black text-mango-orange">Planning</div>
-                  <div className="text-2xl font-black uppercase">02:15</div>
-                </div>
+              <p className="text-lg lg:text-xl font-medium text-mango-dark bg-white/40 p-5 lg:p-6 border-l-4 border-mango-dark backdrop-blur-sm">
+                10,000hours is the mastery ledger for people who want awareness over distractions. Track every minute, capture the story, and master what matters.
+              </p>
+              
+              <div className="flex flex-wrap gap-4">
+                <SignedOut>
+                  <CTAButton
+                    variant="primary"
+                    ctaName="Get Started"
+                    ctaLocation="hero"
+                    isSignUp={true}
+                  >
+                    Get Started
+                  </CTAButton>
+                  <CTAButton
+                    variant="secondary"
+                    ctaName="View Demo"
+                    ctaLocation="hero"
+                  >
+                    View Demo
+                  </CTAButton>
+                </SignedOut>
+                <SignedIn>
+                  <CTAButton
+                    href="/app/now"
+                    variant="primary"
+                    ctaName="Get Started"
+                    ctaLocation="hero"
+                  >
+                    Get Started
+                  </CTAButton>
+                  <CTAButton
+                    href="/app/now"
+                    variant="secondary"
+                    ctaName="View Demo"
+                    ctaLocation="hero"
+                  >
+                    View Demo
+                  </CTAButton>
+                </SignedIn>
               </div>
             </div>
           </div>

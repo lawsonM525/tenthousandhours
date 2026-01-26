@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Label } from "@/components/ui/label"
 import { Calendar, Clock, Globe } from "lucide-react"
 
 export default function CalendarSettingsPage() {

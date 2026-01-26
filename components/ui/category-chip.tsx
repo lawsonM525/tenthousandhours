@@ -9,7 +9,7 @@ interface CategoryChipProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const CategoryChip = React.forwardRef<HTMLDivElement, CategoryChipProps>(
-  ({ color, label, active = false, variant = "outline", className, ...props }, ref) => {
+  ({ color, label, active = false, variant: _variant = "outline", className, ...props }, ref) => {
     const hexColor = CATEGORY_COLORS[color]
     
     return (
