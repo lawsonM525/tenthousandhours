@@ -619,7 +619,7 @@ export default function TimelinePage() {
                     {/* Session blocks overlay */}
                     <div className="absolute inset-0 grid grid-cols-[50px_repeat(7,1fr)] gap-0 pointer-events-none">
                       <div></div>
-                      {eachDayOfInterval({ start: dateRange.start, end: dateRange.end }).map((day, dayIndex) => {
+                      {eachDayOfInterval({ start: dateRange.start, end: dateRange.end }).map((day, _dayIndex) => {
                         const daySessions = sessions.filter(s => isSameDay(new Date(s.start), day))
                         
                         return (

@@ -1,4 +1,4 @@
-import { MessageSquare, Mail, FileText, ExternalLink } from "lucide-react"
+import { MessageSquare, ExternalLink } from "lucide-react"
 
 export default function SupportSettingsPage() {
   const supportLinks = [
