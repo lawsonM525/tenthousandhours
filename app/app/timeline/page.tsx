@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react"
 import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, addDays, isToday } from "date-fns"
-import { ChevronLeft, ChevronRight, Calendar, Trash2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, Calendar, Trash2, Plus } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog"
-import { useSessions, useUpdateSession, useDeleteSession } from "@/lib/hooks/use-sessions"
+import { useSessions, useUpdateSession, useDeleteSession, useCreateSession } from "@/lib/hooks/use-sessions"
 import { useCategories } from "@/lib/hooks/use-categories"
 import { Session, Category } from "@/lib/types"
 import { useToast } from "@/components/ui/use-toast"
@@ -30,8 +30,18 @@ export default function TimelinePage() {
     categoryId: "",
   })
   
+  // Add session state
+  const [isAddOpen, setIsAddOpen] = useState(false)
+  const [addForm, setAddForm] = useState({
+    title: "",
+    start: "",
+    end: "",
+    categoryId: "",
+  })
+  
   const updateSession = useUpdateSession()
   const deleteSession = useDeleteSession()
+  const createSession = useCreateSession()
   const { toast } = useToast()
 
   // Track page view on mount
@@ -89,6 +99,72 @@ export default function TimelinePage() {
   
   const goToToday = () => {
     setSelectedDate(new Date())
+  }
+  
+  // Open add session dialog with default times
+  const openAddDialog = () => {
+    const now = new Date()
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
+    setAddForm({
+      title: "",
+      start: format(oneHourAgo, "yyyy-MM-dd'T'HH:mm"),
+      end: format(now, "yyyy-MM-dd'T'HH:mm"),
+      categoryId: categories[0]?._id || "",
+    })
+    setIsAddOpen(true)
+  }
+  
+  // Handle manual session creation
+  const handleCreateSession = async () => {
+    if (!addForm.title.trim() || !addForm.start || !addForm.end || !addForm.categoryId) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      })
+      return
+    }
+    
+    const startTime = new Date(addForm.start)
+    const endTime = new Date(addForm.end)
+    
+    if (endTime <= startTime) {
+      toast({
+        title: "Invalid time range",
+        description: "End time must be after start time",
+        variant: "destructive"
+      })
+      return
+    }
+    
+    try {
+      await createSession.mutateAsync({
+        title: addForm.title,
+        categoryId: addForm.categoryId,
+        start: startTime.toISOString(),
+        end: endTime.toISOString(),
+        tags: [],
+      })
+      
+      posthog.capture('session_created_manual', {
+        title: addForm.title,
+        category_id: addForm.categoryId,
+        duration_minutes: Math.round((endTime.getTime() - startTime.getTime()) / 60000),
+      })
+      
+      toast({
+        title: "Session logged",
+        description: `"${addForm.title}" has been added to your timeline.`
+      })
+      
+      setIsAddOpen(false)
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create session",
+        variant: "destructive"
+      })
+    }
   }
   
   // Open edit dialog for a session
@@ -261,6 +337,14 @@ export default function TimelinePage() {
                 Week
               </button>
             </div>
+            
+            <button
+              onClick={openAddDialog}
+              className="ml-3 px-4 py-2 bg-mango-green text-white font-bold text-sm uppercase border-2 border-mango-dark shadow-[3px_3px_0px_#1a1a1a] hover:shadow-[4px_4px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4 stroke-[3]" />
+              Add Session
+            </button>
           </div>
         </div>
       </header>
@@ -390,6 +474,97 @@ export default function TimelinePage() {
           )}
         </div>
       </div>
+      
+      {/* Add Session Dialog */}
+      <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+        <DialogContent className="bg-white border-4 border-mango-dark shadow-[8px_8px_0px_#1a1a1a]">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black uppercase text-mango-dark">Log a Session</DialogTitle>
+            <DialogDescription className="text-slate-500">
+              Manually add a past session to your timeline
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="add-title" className="font-bold uppercase text-sm text-mango-dark">What did you work on?</Label>
+              <Input 
+                id="add-title" 
+                placeholder="e.g., Deep work on project X"
+                value={addForm.title}
+                onChange={(e) => setAddForm({ ...addForm, title: e.target.value })}
+                className="border-2 border-mango-dark bg-white font-medium"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="add-start" className="font-bold uppercase text-sm text-mango-dark">Start Time</Label>
+                <Input 
+                  id="add-start" 
+                  type="datetime-local"
+                  value={addForm.start}
+                  onChange={(e) => setAddForm({ ...addForm, start: e.target.value })}
+                  className="border-2 border-mango-dark bg-white font-medium"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="add-end" className="font-bold uppercase text-sm text-mango-dark">End Time</Label>
+                <Input 
+                  id="add-end" 
+                  type="datetime-local"
+                  value={addForm.end}
+                  onChange={(e) => setAddForm({ ...addForm, end: e.target.value })}
+                  className="border-2 border-mango-dark bg-white font-medium"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="font-bold uppercase text-sm text-mango-dark">Category</Label>
+              <div className="flex flex-wrap gap-2">
+                {categories.map((category) => {
+                  const isSelected = addForm.categoryId === category._id
+                  const color = colorHex[category.color as keyof typeof colorHex] || '#666'
+                  return (
+                    <button
+                      key={category._id}
+                      onClick={() => setAddForm({ ...addForm, categoryId: category._id })}
+                      className={`px-3 py-1.5 font-bold text-sm uppercase border-2 transition-all ${
+                        isSelected 
+                          ? 'border-mango-dark shadow-[2px_2px_0px_#1a1a1a] text-white' 
+                          : 'border-transparent hover:border-mango-dark/50'
+                      }`}
+                      style={{ 
+                        backgroundColor: isSelected ? color : `${color}20`,
+                        color: isSelected ? 'white' : color
+                      }}
+                    >
+                      {category.name}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <button 
+                onClick={handleCreateSession} 
+                disabled={!addForm.title.trim() || !addForm.categoryId || createSession.isPending}
+                className="flex-1 px-4 py-2 bg-mango-green text-white font-bold uppercase text-sm border-2 border-mango-dark shadow-[3px_3px_0px_#1a1a1a] hover:shadow-[4px_4px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {createSession.isPending ? "Saving..." : "Log Session"}
+              </button>
+              <button 
+                onClick={() => setIsAddOpen(false)}
+                className="px-4 py-2 bg-white text-mango-dark font-bold uppercase text-sm border-2 border-mango-dark shadow-[3px_3px_0px_#1a1a1a] hover:shadow-[4px_4px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
       
       {/* Edit Session Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
