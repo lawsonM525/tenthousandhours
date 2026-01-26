@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@clerk/nextjs/server"
+import { getAuthUserId } from "@/lib/auth-helper"
 import { getDb } from "@/lib/db"
 import { createCategorySchema } from "@/lib/schemas"
 import { Category } from "@/lib/types"
@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
   try {
-    const { userId } = await auth()
+    const userId = await getAuthUserId(req)
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   console.log('Categories POST endpoint hit')
   try {
-    const { userId } = await auth()
+    const userId = await getAuthUserId(req)
     console.log('User ID:', userId)
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
