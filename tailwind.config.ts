@@ -52,6 +52,14 @@ const config = {
         success: '#26D07C',
         warning: '#FFB020',
         danger: '#FF5C5C',
+        // Mango Monster theme
+        mango: {
+          blue: '#2EB7E5',
+          orange: '#FFB31A',
+          red: '#E62E2D',
+          yellow: '#FFD600',
+          dark: '#1A1A1A',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],

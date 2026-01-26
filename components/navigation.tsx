@@ -1,50 +1,45 @@
 "use client";
 
 import Link from "next/link";
-import { Menu } from "lucide-react";
-import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
-
-const navigation = [
-  { name: "Product", href: "#product" },
-  { name: "Insights", href: "#insights" },
-  { name: "Timeline", href: "#timeline" },
-  { name: "Categories", href: "#categories" },
-  { name: "Principles", href: "#principles" },
-];
+import { SignedIn, SignedOut, SignUpButton, UserButton } from "@clerk/nextjs";
+import { LiveSessionIndicator } from "./live-session-indicator";
 
 export function Navigation() {
   return (
-    <header className="sticky top-0 z-40 border-b border-white/5 bg-[rgba(11,13,16,0.85)] backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/" className="flex items-center gap-2 text-sm font-semibold tracking-tight">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F11D75]/20 text-[#F11D75]">10k</span>
-          <span className="text-base font-semibold text-white">10,000hours</span>
+    <header className="sticky top-0 z-50 border-b-4 border-mango-dark bg-white">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 h-20">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-3 group cursor-pointer">
+          <div className="w-12 h-12 bg-mango-dark text-mango-yellow rounded-lg flex items-center justify-center font-bold text-2xl transform -rotate-3 transition-transform group-hover:rotate-0 border-2 border-mango-orange">
+            10K
+          </div>
+          <span className="font-bold text-2xl tracking-tighter uppercase italic text-mango-dark">10,000HOURS</span>
         </Link>
-        <nav className="hidden items-center gap-8 text-sm font-medium text-[var(--muted)] md:flex">
-          {navigation.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              className="transition-colors hover:text-white"
-            >
-              {item.name}
-            </Link>
-          ))}
-        </nav>
-        <div className="flex items-center gap-3">
+        
+        {/* Live Session Indicator */}
+        <LiveSessionIndicator />
+        
+        {/* Right side */}
+        <div className="flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-6 font-bold text-xs uppercase tracking-widest text-mango-dark">
+            <Link href="/memento-mori" className="hover:text-mango-red transition-colors">Memento Mori</Link>
+            <Link href="#timeline" className="hover:text-mango-red transition-colors">Know Thyself</Link>
+          </nav>
+          
           <SignedOut>
-            <SignInButton mode="modal">
-              <button className="rounded-full border border-white/10 px-3 py-1.5 text-xs font-medium text-white/80 transition hover:text-white sm:px-4 sm:py-2 sm:text-sm">
-                Log in
-              </button>
-            </SignInButton>
             <SignUpButton mode="modal">
-              <button className="rounded-full bg-[#F11D75] px-3 py-1.5 text-xs font-semibold text-white shadow-[0_0_20px_rgba(241,29,117,0.35)] transition hover:bg-[#ff2a86] sm:px-4 sm:py-2 sm:text-sm">
-                Start free
+              <button className="bg-mango-orange hover:bg-mango-yellow text-mango-dark px-6 py-2.5 rounded-sm border-2 border-mango-dark font-bold text-lg uppercase shadow-[4px_4px_0px_#000] transition-all active:translate-x-1 active:translate-y-1 active:shadow-none">
+                Launch App
               </button>
             </SignUpButton>
           </SignedOut>
           <SignedIn>
+            <Link 
+              href="/app/now"
+              className="bg-mango-orange hover:bg-mango-yellow text-mango-dark px-6 py-2.5 rounded-sm border-2 border-mango-dark font-bold text-lg uppercase shadow-[4px_4px_0px_#000] transition-all active:translate-x-1 active:translate-y-1 active:shadow-none"
+            >
+              Launch App
+            </Link>
             <UserButton afterSignOutUrl="/" />
           </SignedIn>
         </div>
