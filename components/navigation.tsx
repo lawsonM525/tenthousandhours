@@ -28,7 +28,7 @@ export function Navigation() {
         <div className="flex items-center gap-6">
           <nav className="hidden md:flex items-center gap-6 font-bold text-xs uppercase tracking-widest text-mango-dark">
             <Link href="/memento-mori" className="hover:text-mango-red transition-colors">Memento Mori</Link>
-            <Link href="#timeline" className="hover:text-mango-red transition-colors">Know Thyself</Link>
+            <Link href="/know-thyself" className="hover:text-mango-red transition-colors">Know Thyself</Link>
           </nav>
           
           <SignedOut>
