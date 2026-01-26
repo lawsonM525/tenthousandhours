@@ -1,11 +1,12 @@
 "use client"
 
-import { Play, Pause, Square, RotateCcw } from 'lucide-react'
+import { Play, Square } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { useActiveSession, useCreateSession, useUpdateSession } from '@/lib/hooks/use-sessions'
 import { CategoryColor, Session } from '@/lib/types'
 import { SessionCompleteDialog } from './session-complete-dialog'
+import posthog from 'posthog-js'
 
 interface CountdownTimerProps {
   categoryId: string
@@ -101,7 +102,7 @@ export default function CountdownTimer({
 
   const handleStart = async () => {
     if (!categoryId || !title) return
-    
+
     try {
       await createSession.mutateAsync({
         categoryId,
@@ -110,37 +111,58 @@ export default function CountdownTimer({
         tags: []
       })
       await refetchActive()
+
+      // Track session started event
+      posthog.capture('session_started', {
+        category_id: categoryId,
+        category_color: categoryColor,
+        session_title: title,
+        planned_duration_minutes: initialMinutes,
+      })
     } catch (error) {
       console.error('Failed to start session:', error)
+      posthog.captureException(error)
     }
   }
 
   const handleStop = async () => {
     if (!activeSession) return
-    
+
     try {
-      const result = await updateSession.mutateAsync({
+      const _result = await updateSession.mutateAsync({
         id: activeSession._id,
         data: {
           end: new Date().toISOString()
         }
       })
-      
+
       // Calculate duration for the completed session
       const endTime = new Date()
       const startTime = new Date(activeSession.start)
       const durationMin = Math.round((endTime.getTime() - startTime.getTime()) / 1000 / 60)
-      
+
+      // Track session completed event
+      posthog.capture('session_completed', {
+        session_id: activeSession._id,
+        category_id: activeSession.categoryId,
+        session_title: activeSession.title,
+        planned_duration_minutes: initialMinutes,
+        actual_duration_minutes: durationMin,
+        was_overtime: isOvertime,
+        overtime_minutes: isOvertime ? Math.max(0, durationMin - initialMinutes) : 0,
+      })
+
       setCompletedSession({
         ...activeSession,
         end: endTime,
         durationMin
       })
       setShowCompleteDialog(true)
-      
+
       await refetchActive()
     } catch (error) {
       console.error('Failed to stop session:', error)
+      posthog.captureException(error)
     }
   }
 

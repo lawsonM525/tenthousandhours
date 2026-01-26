@@ -1,16 +1,23 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, startOfDay, endOfDay, isToday } from "date-fns"
-import { ChevronLeft, ChevronRight, Filter, List, Calendar } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useSessions } from "@/lib/hooks/use-sessions"
 import { useCategories } from "@/lib/hooks/use-categories"
-import { Session, Category } from "@/lib/types"
+import { Category } from "@/lib/types"
+import posthog from 'posthog-js'
 
 export default function InsightsPage() {
   const [selectedWeek, setSelectedWeek] = useState(new Date())
   const [selectedDay, setSelectedDay] = useState(new Date())
+
+  // Track page view on mount
+  useEffect(() => {
+    posthog.capture('insights_viewed', {
+      week_start: startOfWeek(new Date()).toISOString(),
+    })
+  }, [])
   
   // Get week range
   const weekStart = startOfWeek(selectedWeek)
@@ -36,6 +43,23 @@ export default function InsightsPage() {
     categories.forEach(cat => map.set(cat._id, cat))
     return map
   }, [categories])
+  
+  // Helper functions - defined before useMemo hooks that use them
+  const formatDuration = (minutes: number) => {
+    const hours = Math.floor(minutes / 60)
+    const mins = minutes % 60
+    if (hours > 0) {
+      return `${hours}h ${mins}m`
+    }
+    return `${mins}m`
+  }
+  
+  const formatHour = (hour: number) => {
+    if (hour === 0) return 'Midnight'
+    if (hour === 12) return 'Noon'
+    if (hour < 12) return `${hour}am`
+    return `${hour - 12}pm`
+  }
   
   // Calculate stats
   const stats = useMemo(() => {
@@ -140,22 +164,6 @@ export default function InsightsPage() {
     return tasks
   }, [weekSessions, categoryMap, stats.totalMinutes])
   
-  const formatDuration = (minutes: number) => {
-    const hours = Math.floor(minutes / 60)
-    const mins = minutes % 60
-    if (hours > 0) {
-      return `${hours}h ${mins}m`
-    }
-    return `${mins}m`
-  }
-  
-  const formatHour = (hour: number) => {
-    if (hour === 0) return 'Midnight'
-    if (hour === 12) return 'Noon'
-    if (hour < 12) return `${hour}am`
-    return `${hour - 12}pm`
-  }
-  
   // Navigation
   const navigateWeek = (direction: 'prev' | 'next') => {
     setSelectedWeek(current => direction === 'prev' ? subWeeks(current, 1) : addWeeks(current, 1))
@@ -175,118 +183,114 @@ export default function InsightsPage() {
 
   return (
     <div className="h-full flex flex-col">
-      <header className="border-b border-border-subtle bg-bg-surface px-6 py-4">
+      {/* Header */}
+      <header className="bg-white border-b-4 border-mango-dark px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="text-h2 font-semibold text-text-primary">insights</h1>
-            <p className="text-body text-text-secondary mt-1">truth over vibes. here&apos;s where your week actually went.</p>
+            <div className="inline-block bg-mango-yellow px-3 py-1 border-2 border-mango-dark transform -rotate-1 mb-2">
+              <span className="font-bold text-xs uppercase text-mango-dark">Analytics That Matter</span>
+            </div>
+            <h1 className="text-3xl font-black uppercase text-mango-dark">Insights</h1>
+            <p className="text-sm font-medium text-slate-500 mt-1">Truth over vibes. Here&apos;s where your week actually went.</p>
           </div>
           <div className="hidden md:flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
+            <button
               onClick={() => navigateWeek('prev')}
+              className="w-8 h-8 bg-white border-2 border-mango-dark shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[3px_3px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all flex items-center justify-center"
             >
               <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <div className="rounded-full border border-border-subtle bg-bg-surface px-4 py-1 text-xs text-text-secondary">
+            </button>
+            <div className="px-4 py-2 bg-mango-dark text-white font-bold text-sm uppercase">
               {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d')}
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
+            <button
               onClick={() => navigateWeek('next')}
+              className="w-8 h-8 bg-white border-2 border-mango-dark shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[3px_3px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all flex items-center justify-center"
             >
               <ChevronRight className="h-4 w-4" />
-            </Button>
+            </button>
           </div>
         </div>
       </header>
       
       <div className="flex-1 overflow-auto p-6 pb-24 lg:pb-6">
         {weekLoading ? (
-          <div className="text-center py-12 text-text-muted">
-            <p className="text-body">Loading insights...</p>
+          <div className="text-center py-12">
+            <p className="text-mango-dark font-bold">Loading insights...</p>
           </div>
         ) : weekSessions.length === 0 ? (
-          <div className="text-center py-12 text-text-muted space-y-2">
-            <p className="text-h3">no data for this week</p>
-            <p className="text-body">
-              start tracking your time to see insights appear here.
-            </p>
+          <div className="max-w-md mx-auto text-center py-12">
+            <div className="distressed-card p-8">
+              <h3 className="text-2xl font-black uppercase text-mango-dark mb-2">No Data Yet</h3>
+              <p className="text-slate-500">
+                Start tracking your time to see insights appear here.
+              </p>
+            </div>
           </div>
         ) : (
           <div className="max-w-6xl mx-auto grid grid-cols-12 gap-6">
             <div className="col-span-12 lg:col-span-7 space-y-6">
               {/* Stats Overview */}
-              <div className="card-elevated p-6">
+              <div className="distressed-card p-6">
                 <div className="mb-4 flex items-center justify-between">
-                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-bg-surface px-3 py-1 text-xs font-medium text-text-secondary">
-                    Week overview
-                  </span>
+                  <div className="inline-block bg-mango-orange px-3 py-1 border-2 border-mango-dark">
+                    <span className="font-bold text-xs uppercase text-white">Week Overview</span>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                  <div className="rounded-component border border-border-subtle bg-bg-surface p-4">
-                    <p className="text-small uppercase tracking-wide text-text-muted">Total focus</p>
-                    <p className="mt-2 text-2xl font-semibold text-text-primary">
+                  <div className="p-4 bg-mango-red/10 border-2 border-mango-red">
+                    <p className="text-[10px] uppercase font-black text-mango-red tracking-wider">Total Focus</p>
+                    <p className="mt-2 text-2xl font-black text-mango-dark">
                       {formatDuration(stats.totalMinutes)}
                     </p>
-                    <p className="text-small text-text-muted">&nbsp;</p>
                   </div>
-                  <div className="rounded-component border border-border-subtle bg-bg-surface p-4">
-                    <p className="text-small uppercase tracking-wide text-text-muted">Avg focus/day</p>
-                    <p className="mt-2 text-2xl font-semibold text-text-primary">
+                  <div className="p-4 bg-mango-orange/10 border-2 border-mango-orange">
+                    <p className="text-[10px] uppercase font-black text-mango-orange tracking-wider">Avg Focus/Day</p>
+                    <p className="mt-2 text-2xl font-black text-mango-dark">
                       {formatDuration(Math.round(stats.avgMinutesPerDay))}
                     </p>
-                    <p className="text-small text-text-muted">&nbsp;</p>
                   </div>
-                  <div className="rounded-component border border-border-subtle bg-bg-surface p-4">
-                    <p className="text-small uppercase tracking-wide text-text-muted">Most focused</p>
-                    <p className="mt-2 text-2xl font-semibold text-text-primary">
+                  <div className="p-4 bg-mango-yellow/10 border-2 border-mango-yellow">
+                    <p className="text-[10px] uppercase font-black text-mango-dark tracking-wider">Most Focused</p>
+                    <p className="mt-2 text-2xl font-black text-mango-dark">
                       {formatHour(stats.mostProductiveHour)}
                     </p>
-                    <p className="text-small text-text-muted">&nbsp;</p>
                   </div>
-                  <div className="rounded-component border border-border-subtle bg-bg-surface p-4">
-                    <p className="text-small uppercase tracking-wide text-text-muted">Focus/break</p>
-                    <p className="mt-2 text-2xl font-semibold text-text-primary">
+                  <div className="p-4 bg-mango-green/10 border-2 border-mango-green">
+                    <p className="text-[10px] uppercase font-black text-mango-green tracking-wider">Focus/Break</p>
+                    <p className="mt-2 text-2xl font-black text-mango-dark">
                       {stats.focusBreakRatio} / 1
                     </p>
-                    <p className="text-small text-text-muted">&nbsp;</p>
                   </div>
                 </div>
               </div>
 
               {/* Category Distribution */}
               {categoryDistribution.length > 0 && (
-                <div className="card-elevated p-6">
-                  <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-small font-medium uppercase tracking-[0.35em] text-text-muted">
-                      Category Distribution
-                    </h3>
-                    <div className="text-small text-text-secondary">This week</div>
+                <div className="distressed-card p-6">
+                  <div className="mb-6 flex items-center justify-between">
+                    <h3 className="font-black text-xl uppercase text-mango-dark">Category Breakdown</h3>
+                    <span className="font-bold text-xs uppercase bg-mango-dark text-white px-3 py-1">This Week</span>
                   </div>
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                     {categoryDistribution.map((cat) => (
-                      <div key={cat.categoryId} className="space-y-2">
-                        <div className="flex items-center justify-between text-body">
-                          <span className="flex items-center gap-2 text-text-primary">
-                            <span 
-                              className="h-2.5 w-2.5 rounded-full" 
+                      <div key={cat.categoryId}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="w-3 h-3 rounded-full" 
                               style={{ backgroundColor: colorHex[cat.color as keyof typeof colorHex] || '#666' }} 
                             />
-                            {cat.name}
-                          </span>
-                          <span className="text-text-secondary">
-                            {cat.percentage}% · {cat.timeString}
-                          </span>
+                            <span className="font-bold text-mango-dark">{cat.name}</span>
+                          </div>
+                          <span className="font-black text-lg text-mango-dark">{cat.timeString}</span>
                         </div>
-                        <div className="h-2 rounded-pill bg-bg-surface border border-border-subtle/60">
+                        <div className="h-2 bg-slate-100 border border-mango-dark overflow-hidden">
                           <div 
-                            className="h-full rounded-pill" 
+                            className="h-full transition-all duration-1000 ease-out" 
                             style={{ 
                               width: `${cat.percentage}%`, 
-                              backgroundColor: `${colorHex[cat.color as keyof typeof colorHex] || '#666'}cc` 
+                              backgroundColor: colorHex[cat.color as keyof typeof colorHex] || '#666'
                             }} 
                           />
                         </div>
@@ -298,33 +302,29 @@ export default function InsightsPage() {
 
               {/* Task Breakdown */}
               {taskBreakdown.length > 0 && (
-                <div className="card-elevated p-6">
-                  <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-small font-medium uppercase tracking-[0.35em] text-text-muted">
-                      By Intention
-                    </h3>
+                <div className="distressed-card p-6">
+                  <div className="mb-6 flex items-center justify-between">
+                    <h3 className="font-black text-xl uppercase text-mango-dark">By Intention</h3>
                   </div>
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                     {taskBreakdown.map((task, idx) => (
-                      <div key={idx} className="space-y-2">
-                        <div className="flex items-center justify-between text-body">
-                          <span className="flex items-center gap-2 text-text-primary">
-                            <span 
-                              className="h-2.5 w-2.5 rounded-full" 
+                      <div key={idx}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="w-3 h-3 rounded-full" 
                               style={{ backgroundColor: colorHex[task.color as keyof typeof colorHex] || '#666' }} 
                             />
-                            {task.name}
-                          </span>
-                          <span className="text-text-secondary">
-                            {task.percentage}% · {task.timeString}
-                          </span>
+                            <span className="font-bold text-mango-dark">{task.name}</span>
+                          </div>
+                          <span className="font-black text-lg text-mango-dark">{task.timeString}</span>
                         </div>
-                        <div className="h-2 rounded-pill bg-bg-surface border border-border-subtle/60">
+                        <div className="h-2 bg-slate-100 border border-mango-dark overflow-hidden">
                           <div 
-                            className="h-full rounded-pill" 
+                            className="h-full transition-all duration-1000 ease-out" 
                             style={{ 
                               width: `${task.percentage}%`, 
-                              backgroundColor: `${colorHex[task.color as keyof typeof colorHex] || '#666'}cc` 
+                              backgroundColor: colorHex[task.color as keyof typeof colorHex] || '#666'
                             }} 
                           />
                         </div>
@@ -337,29 +337,28 @@ export default function InsightsPage() {
 
             {/* Day Timeline */}
             <div className="col-span-12 lg:col-span-5 space-y-6">
-              <div className="card-elevated p-6">
-                <div className="flex items-center justify-between">
+              <div className="distressed-card p-6">
+                <div className="flex items-center justify-between mb-4">
                   <div>
-                    <p className="text-small uppercase tracking-[0.35em] text-text-muted">
+                    <p className="text-xs uppercase font-bold text-slate-500 tracking-widest">
                       {format(selectedDay, 'EEE, MMM d')}
                     </p>
-                    <h3 className="mt-2 text-h3 font-semibold text-text-primary">
-                      {formatDuration(daySessions.reduce((sum, s) => sum + (s.durationMin || 0), 0))} focus logged
+                    <h3 className="mt-1 text-2xl font-black text-mango-dark">
+                      {formatDuration(daySessions.reduce((sum, s) => sum + (s.durationMin || 0), 0))} logged
                     </h3>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <button
                     onClick={() => setSelectedDay(new Date())}
                     disabled={isToday(selectedDay)}
+                    className="px-3 py-1 bg-mango-yellow text-mango-dark font-bold text-sm uppercase border-2 border-mango-dark shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[3px_3px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-[2px_2px_0px_#1a1a1a] disabled:hover:translate-y-0"
                   >
                     Today
-                  </Button>
+                  </button>
                 </div>
                 
                 {/* Mini Timeline */}
                 <div className="mt-6 grid grid-cols-[60px_1fr] gap-4">
-                  <div className="space-y-8 text-small text-text-secondary">
+                  <div className="space-y-8 text-xs font-bold text-slate-400 uppercase">
                     {[9, 12, 15, 18, 21].map((hour) => (
                       <div key={hour}>
                         <span>{hour.toString().padStart(2, "0")}:00</span>
@@ -369,7 +368,7 @@ export default function InsightsPage() {
                   <div className="relative">
                     <div className="absolute inset-0 grid grid-rows-5 gap-y-2">
                       {Array.from({ length: 5 }).map((_, index) => (
-                        <div key={index} className="border-b border-border-subtle/60" />
+                        <div key={index} className="border-b-2 border-mango-dark/10" />
                       ))}
                     </div>
                     
@@ -391,24 +390,19 @@ export default function InsightsPage() {
                         return (
                           <div
                             key={session._id}
-                            className="absolute left-0 right-0 mx-1 rounded-component border border-border-subtle p-2 text-xs"
+                            className="absolute left-0 right-0 mx-1 border-2 border-mango-dark p-2 text-xs shadow-[2px_2px_0px_#1a1a1a]"
                             style={{
                               top: `${topOffset}px`,
                               height: `${height}px`,
-                              backgroundColor: `${color}1a`,
-                              borderColor: color
+                              backgroundColor: color,
                             }}
                           >
                             <div className="flex items-center justify-between">
-                              <span className="text-text-secondary">
+                              <span className="text-white/80 font-bold">
                                 {format(startTime, 'HH:mm')}
                               </span>
-                              <span 
-                                className="w-2 h-2 rounded-full"
-                                style={{ backgroundColor: color }}
-                              />
                             </div>
-                            <p className="font-medium text-text-primary truncate mt-1">
+                            <p className="font-bold text-white truncate mt-1">
                               {session.title}
                             </p>
                           </div>

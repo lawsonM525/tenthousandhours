@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { CategoryChip } from "@/components/ui/category-chip"
-import { 
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -17,6 +17,7 @@ import { CATEGORY_COLOR_OPTIONS, type CategoryColor } from "@/lib/utils"
 import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from "@/lib/hooks/use-categories"
 import { Category, CategoryType } from "@/lib/types"
 import { useToast } from "@/components/ui/use-toast"
+import posthog from 'posthog-js'
 
 export default function CategoriesPage() {
   const { data: categories = [], isLoading } = useCategories()
@@ -54,12 +55,21 @@ export default function CategoriesPage() {
         type: addForm.type,
         countsTowardMastery: addForm.countsTowardMastery
       })
-      
+
+      // Track category created event
+      posthog.capture('category_created', {
+        category_name: addForm.name,
+        category_color: addForm.color,
+        category_type: addForm.type,
+        counts_toward_mastery: addForm.countsTowardMastery,
+        total_categories: categories.length + 1,
+      })
+
       toast({
         title: "Category created",
         description: `"${addForm.name}" has been added to your categories.`
       })
-      
+
       // Reset form and close dialog
       setAddForm({
         name: "",
@@ -75,12 +85,13 @@ export default function CategoriesPage() {
         description: error.message || "Failed to create category",
         variant: "destructive"
       })
+      posthog.captureException(error)
     }
   }
 
   const handleEditCategory = async () => {
     if (!editingCategory) return
-    
+
     try {
       await updateCategory.mutateAsync({
         id: editingCategory._id,
@@ -91,12 +102,25 @@ export default function CategoriesPage() {
           countsTowardMastery: editForm.countsTowardMastery
         }
       })
-      
+
+      // Track category updated event
+      posthog.capture('category_updated', {
+        category_id: editingCategory._id,
+        category_name: editForm.name,
+        previous_name: editingCategory.name,
+        category_color: editForm.color,
+        category_type: editForm.type,
+        counts_toward_mastery: editForm.countsTowardMastery,
+        name_changed: editForm.name !== editingCategory.name,
+        color_changed: editForm.color !== editingCategory.color,
+        type_changed: editForm.type !== editingCategory.type,
+      })
+
       toast({
         title: "Category updated",
         description: `"${editForm.name}" has been updated.`
       })
-      
+
       setIsEditOpen(false)
       setEditingCategory(null)
     } catch (error: any) {
@@ -105,6 +129,7 @@ export default function CategoriesPage() {
         description: error.message || "Failed to update category",
         variant: "destructive"
       })
+      posthog.captureException(error)
     }
   }
 
@@ -112,7 +137,17 @@ export default function CategoriesPage() {
     if (confirm(`Are you sure you want to delete "${category.name}"? This action cannot be undone if the category has no sessions.`)) {
       try {
         await deleteCategory.mutateAsync(category._id)
-        
+
+        // Track category deleted event
+        posthog.capture('category_deleted', {
+          category_id: category._id,
+          category_name: category.name,
+          category_color: category.color,
+          category_type: category.type,
+          counts_toward_mastery: category.countsTowardMastery,
+          remaining_categories: categories.length - 1,
+        })
+
         toast({
           title: "Category archived",
           description: `"${category.name}" has been archived.`
@@ -123,6 +158,7 @@ export default function CategoriesPage() {
           description: error.message || "Failed to delete category",
           variant: "destructive"
         })
+        posthog.captureException(error)
       }
     }
   }
@@ -140,25 +176,37 @@ export default function CategoriesPage() {
 
   return (
     <div className="h-full flex flex-col">
-      <header className="border-b border-border-subtle bg-bg-surface px-6 py-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-h2 font-semibold text-text-primary">categories</h1>
-          <Button onClick={() => setIsAddOpen(true)} className="gap-2">
+      {/* Header */}
+      <header className="bg-white border-b-4 border-mango-dark px-6 py-4">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <div>
+            <div className="inline-block bg-mango-red px-3 py-1 border-2 border-mango-dark transform -rotate-1 mb-2">
+              <span className="font-bold text-xs uppercase text-white">Organize Your Time</span>
+            </div>
+            <h1 className="text-3xl font-black uppercase text-mango-dark">Categories</h1>
+          </div>
+          <button 
+            onClick={() => setIsAddOpen(true)} 
+            className="px-4 py-2 bg-mango-yellow text-mango-dark font-bold uppercase text-sm border-2 border-mango-dark shadow-[3px_3px_0px_#1a1a1a] hover:shadow-[4px_4px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all flex items-center gap-2"
+          >
             <Plus className="w-4 h-4" />
-            add category
-          </Button>
+            Add Category
+          </button>
         </div>
       </header>
 
       <div className="flex-1 overflow-auto p-6 pb-24 lg:pb-6">
-        <div className="max-w-4xl mx-auto space-y-2">
+        <div className="max-w-4xl mx-auto space-y-3">
           {isLoading ? (
-            <div className="text-center py-8 text-text-muted">
-              <p className="text-body">Loading categories...</p>
+            <div className="text-center py-8">
+              <p className="text-mango-dark font-bold">Loading categories...</p>
             </div>
           ) : categories.length === 0 ? (
-            <div className="text-center py-8 text-text-muted">
-              <p className="text-body">No categories yet. Create your first category to start tracking.</p>
+            <div className="max-w-md mx-auto text-center py-12">
+              <div className="distressed-card p-8">
+                <h3 className="text-2xl font-black uppercase text-mango-dark mb-2">No Categories Yet</h3>
+                <p className="text-slate-500">Create your first category to start tracking.</p>
+              </div>
             </div>
           ) : (
             categories.map((category) => (
@@ -360,23 +408,29 @@ function CategoryRow({
   onDelete: () => void
 }) {
   return (
-    <div className="flex items-center justify-between p-4 bg-bg-surface border border-border-subtle rounded-component hover:bg-bg-elevated transition-colors duration-150">
+    <div className="flex items-center justify-between p-4 bg-white border-2 border-mango-dark shadow-[3px_3px_0px_#1a1a1a] hover:shadow-[4px_4px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all">
       <div className="flex items-center gap-4">
         <CategoryChip color={category.color} label={category.name} />
-        <span className="text-label text-text-secondary capitalize">{category.type}</span>
+        <span className="text-sm font-bold text-slate-500 uppercase">{category.type}</span>
         {category.countsTowardMastery && (
-          <span className="text-small px-2 py-1 bg-accent-blue/10 text-accent-blue rounded">
+          <span className="text-xs px-2 py-1 bg-mango-yellow/20 border border-mango-yellow text-mango-dark font-bold uppercase">
             mastery
           </span>
         )}
       </div>
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" onClick={onEdit}>
+        <button 
+          onClick={onEdit}
+          className="w-8 h-8 bg-mango-orange/10 border-2 border-mango-orange text-mango-orange hover:bg-mango-orange hover:text-white transition-colors flex items-center justify-center"
+        >
           <Edit2 className="w-4 h-4" />
-        </Button>
-        <Button variant="ghost" size="icon" onClick={onDelete}>
+        </button>
+        <button 
+          onClick={onDelete}
+          className="w-8 h-8 bg-mango-red/10 border-2 border-mango-red text-mango-red hover:bg-mango-red hover:text-white transition-colors flex items-center justify-center"
+        >
           <Trash2 className="w-4 h-4" />
-        </Button>
+        </button>
       </div>
     </div>
   )

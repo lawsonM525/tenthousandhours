@@ -5,6 +5,7 @@ import { createNoteSchema } from "@/lib/schemas"
 import { Note } from "@/lib/types"
 import { z } from "zod"
 import crypto from "crypto"
+import { ObjectId } from "mongodb"
 
 export const dynamic = 'force-dynamic'
 
@@ -73,8 +74,10 @@ export async function POST(req: NextRequest) {
     
     // Verify session IDs belong to user
     if (validatedData.sessionIds.length > 0) {
-      const sessions = await db.collection<{ _id: string; userId: string }>("sessions").find({
-        _id: { $in: validatedData.sessionIds },
+      // Convert string IDs to ObjectIds for MongoDB query
+      const objectIds = validatedData.sessionIds.map(id => new ObjectId(id))
+      const sessions = await db.collection<{ _id: ObjectId; userId: string }>("sessions").find({
+        _id: { $in: objectIds },
         userId
       }).toArray()
       

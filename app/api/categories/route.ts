@@ -5,6 +5,7 @@ import { createCategorySchema } from "@/lib/schemas"
 import { Category } from "@/lib/types"
 import { z } from "zod"
 import crypto from "crypto"
+import { getPostHogClient } from "@/lib/posthog-server"
 
 export const dynamic = 'force-dynamic'
 
@@ -118,7 +119,23 @@ export async function POST(req: NextRequest) {
     
     // Insert category
     await db.collection("categories").insertOne(category as any)
-    
+
+    // Track server-side category creation
+    const posthog = getPostHogClient()
+    posthog.capture({
+      distinctId: userId,
+      event: 'api_category_created',
+      properties: {
+        category_id: category._id,
+        category_name: category.name,
+        category_color: category.color,
+        category_type: category.type,
+        counts_toward_mastery: category.countsTowardMastery,
+        has_parent: !!category.parentId,
+        source: 'api',
+      }
+    })
+
     return NextResponse.json(category)
   } catch (error) {
     if (error instanceof z.ZodError) {

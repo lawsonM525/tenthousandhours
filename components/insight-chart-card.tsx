@@ -35,7 +35,7 @@ export function InsightChartCard() {
 
         <div className="relative z-10 grid grid-cols-7 gap-3">
           {weekly.map((d) => {
-            const total = d.segments.reduce((s, seg) => s + seg.hours, 0);
+            const _total = d.segments.reduce((s, seg) => s + seg.hours, 0);
             return (
               <div key={d.day} className="flex flex-col items-center">
                 {/* bar */}

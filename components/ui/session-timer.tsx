@@ -1,6 +1,6 @@
 "use client"
 
-import { Play, Pause, Square, RotateCcw } from 'lucide-react'
+import { Square } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { useActiveSession, useCreateSession, useUpdateSession } from '@/lib/hooks/use-sessions'

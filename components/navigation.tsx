@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { SignedIn, SignedOut, SignUpButton, UserButton } from "@clerk/nextjs";
 import { LiveSessionIndicator } from "./live-session-indicator";
 
@@ -10,9 +11,13 @@ export function Navigation() {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 h-20">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 group cursor-pointer">
-          <div className="w-12 h-12 bg-mango-dark text-mango-yellow rounded-lg flex items-center justify-center font-bold text-2xl transform -rotate-3 transition-transform group-hover:rotate-0 border-2 border-mango-orange">
-            10K
-          </div>
+          <Image 
+            src="/logo.svg" 
+            alt="10,000 Hours" 
+            width={48} 
+            height={48} 
+            className="transform -rotate-3 transition-transform group-hover:rotate-0"
+          />
           <span className="font-bold text-2xl tracking-tighter uppercase italic text-mango-dark">10,000HOURS</span>
         </Link>
         

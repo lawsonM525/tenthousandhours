@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Play, Pause } from "lucide-react";
 import { SignedIn, SignedOut, SignUpButton } from "@clerk/nextjs";
-import Link from "next/link";
 
 export function LiveSessionIndicator() {
   const [isRunning, setIsRunning] = useState(false);

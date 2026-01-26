@@ -1,6 +1,5 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import Script from "next/script"
 import { ClerkProvider } from "@clerk/nextjs"
 import { Providers } from "@/components/providers"
 import { SimpleToastProvider } from "@/components/ui/simple-toast"

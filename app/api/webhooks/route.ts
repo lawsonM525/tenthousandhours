@@ -1,7 +1,7 @@
 console.log('webhooks file loaded')
 import { NextResponse } from "next/server"
 import type { WebhookEvent } from "@clerk/nextjs/server"
-import { clerkClient } from "@clerk/nextjs/server"
+import { getPostHogClient } from "@/lib/posthog-server"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -39,7 +39,40 @@ export async function POST(req: Request) {
   }
 
   // optionally: lazy-import DB actions if they have side effects at import time
-  const { createUser, updateUser, deleteUser } = await import("@/lib/actions/user.actions")
+  // User actions available if needed:
+  // const { createUser, updateUser, deleteUser } = await import("@/lib/actions/user.actions")
+
+  const eventType = evt.type
+
+  // Track user lifecycle events in PostHog
+  if (eventType === "user.created") {
+    const { id, email_addresses, first_name, last_name, username } = evt.data
+
+    const posthog = getPostHogClient()
+
+    // Identify the user in PostHog
+    posthog.identify({
+      distinctId: id,
+      properties: {
+        email: email_addresses?.[0]?.email_address,
+        first_name: first_name,
+        last_name: last_name,
+        username: username,
+        created_at: new Date().toISOString(),
+      }
+    })
+
+    // Capture signup event
+    posthog.capture({
+      distinctId: id,
+      event: 'user_signed_up',
+      properties: {
+        signup_source: 'clerk',
+        has_email: !!email_addresses?.length,
+        has_username: !!username,
+      }
+    })
+  }
 
   // ...your existing eventType logic...
   return NextResponse.json({ ok: true })

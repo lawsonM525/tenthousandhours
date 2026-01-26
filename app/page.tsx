@@ -1,7 +1,7 @@
 import { Navigation } from "@/components/navigation";
-import Link from "next/link";
-import { SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { CheckCircle } from "lucide-react";
+import { CTAButton } from "@/components/landing-cta";
 
 const timelineBlocks = [
   {
@@ -30,14 +30,55 @@ const timelineBlocks = [
   },
 ];
 
-const weeklyData = [
-  { day: "M", height: "80%", color: "bg-mango-red" },
-  { day: "T", height: "95%", color: "bg-mango-orange" },
-  { day: "W", height: "60%", color: "bg-mango-yellow" },
-  { day: "T", height: "75%", color: "bg-mango-red" },
-  { day: "F", height: "90%", color: "bg-mango-orange" },
-  { day: "S", height: "40%", color: "bg-mango-yellow" },
-  { day: "S", height: "20%", color: "bg-slate-200" },
+const _weeklyData = [
+  { day: "M", segments: [
+    { height: 70, color: "bg-mango-red" },
+    { height: 55, color: "bg-mango-orange" },
+    { height: 50, color: "bg-mango-yellow" },
+  ]},
+  { day: "T", segments: [
+    { height: 80, color: "bg-mango-yellow" },
+    { height: 65, color: "bg-mango-red" },
+    { height: 60, color: "bg-mango-green" },
+  ]},
+  { day: "W", segments: [
+    { height: 45, color: "bg-mango-orange" },
+    { height: 55, color: "bg-mango-yellow" },
+    { height: 35, color: "bg-mango-red" },
+  ]},
+  { day: "T", segments: [
+    { height: 55, color: "bg-mango-red" },
+    { height: 45, color: "bg-mango-green" },
+    { height: 65, color: "bg-mango-orange" },
+  ]},
+  { day: "F", segments: [
+    { height: 90, color: "bg-mango-yellow" },
+    { height: 65, color: "bg-mango-red" },
+    { height: 45, color: "bg-mango-orange" },
+  ]},
+  { day: "S", segments: [
+    { height: 35, color: "bg-mango-green" },
+    { height: 35, color: "bg-mango-yellow" },
+    { height: 25, color: "bg-mango-red" },
+  ]},
+  { day: "S", segments: [
+    { height: 25, color: "bg-mango-orange" },
+    { height: 20, color: "bg-slate-300" },
+  ]},
+];
+
+const insightStats = [
+  { label: "This Week", value: "26h 35m", sublabel: "total focus", change: "+12%", positive: true },
+  { label: "Average / Day", value: "3h 48m", sublabel: "logged", change: "+18%", positive: true },
+  { label: "Most Time", value: "Noon", sublabel: "focus/break", ratio: "7.2 / 1" },
+  { label: "Unassigned", value: "3h 40m", sublabel: "gap to log", change: "-24%", positive: false },
+];
+
+const categoryBreakdown = [
+  { name: "Coding", hours: "10h", percent: 40, color: "bg-mango-red" },
+  { name: "Design", hours: "8h", percent: 32, color: "bg-mango-orange" },
+  { name: "Spirituality", hours: "4h", percent: 16, color: "bg-mango-yellow" },
+  { name: "Social", hours: "3h", percent: 12, color: "bg-[#2EB7E5]" },
 ];
 
 export default function Home() {
@@ -66,28 +107,39 @@ export default function Home() {
             
             <div className="flex flex-wrap gap-4">
               <SignedOut>
-                <SignUpButton mode="modal">
-                  <button className="px-8 py-4 bg-mango-red text-white border-2 border-mango-dark font-bold text-2xl uppercase shadow-[6px_6px_0px_#000] hover:-translate-y-1 transition-all">
-                    Get Started
-                  </button>
-                </SignUpButton>
-                <button className="px-8 py-4 bg-white text-mango-dark border-2 border-mango-dark font-bold text-2xl uppercase shadow-[6px_6px_0px_#000] hover:-translate-y-1 transition-all">
-                  View Demo
-                </button>
-              </SignedOut>
-              <SignedIn>
-                <Link 
-                  href="/app/now" 
-                  className="px-8 py-4 bg-mango-red text-white border-2 border-mango-dark font-bold text-2xl uppercase shadow-[6px_6px_0px_#000] hover:-translate-y-1 transition-all"
+                <CTAButton
+                  variant="primary"
+                  ctaName="Get Started"
+                  ctaLocation="hero"
+                  isSignUp={true}
                 >
                   Get Started
-                </Link>
-                <Link 
-                  href="/app/now"
-                  className="px-8 py-4 bg-white text-mango-dark border-2 border-mango-dark font-bold text-2xl uppercase shadow-[6px_6px_0px_#000] hover:-translate-y-1 transition-all"
+                </CTAButton>
+                <CTAButton
+                  variant="secondary"
+                  ctaName="View Demo"
+                  ctaLocation="hero"
                 >
                   View Demo
-                </Link>
+                </CTAButton>
+              </SignedOut>
+              <SignedIn>
+                <CTAButton
+                  href="/app/now"
+                  variant="primary"
+                  ctaName="Get Started"
+                  ctaLocation="hero"
+                >
+                  Get Started
+                </CTAButton>
+                <CTAButton
+                  href="/app/now"
+                  variant="secondary"
+                  ctaName="View Demo"
+                  ctaLocation="hero"
+                >
+                  View Demo
+                </CTAButton>
               </SignedIn>
             </div>
           </div>
@@ -206,39 +258,133 @@ export default function Home() {
         </div>
         
         {/* Insights Section */}
-        <div className="mt-40 grid lg:grid-cols-2 gap-16 items-center" id="insights">
+        <div className="mt-40 grid lg:grid-cols-2 gap-16 items-start" id="insights">
           {/* Text */}
-          <div className="space-y-8 order-2 lg:order-1">
+          <div className="space-y-8 order-2 lg:order-1 py-12">
+            <div className="inline-block bg-mango-yellow px-4 py-1 border-2 border-mango-dark transform -rotate-1">
+              <span className="font-bold text-sm uppercase">Analytics that matter</span>
+            </div>
             <h2 className="font-black text-5xl lg:text-6xl xl:text-7xl uppercase leading-tight text-white drop-shadow-[4px_4px_0px_#000]">
               Deep <span className="text-mango-yellow italic">Insights</span> Without <span className="text-mango-red">The Noise.</span>
             </h2>
             <p className="text-xl font-medium text-mango-dark max-w-xl">
               Every session rolls into rich analytics. Spot trends by category, surface unlogged time, and see pacing tips on how to close the gap toward mastery.
             </p>
-            <div className="flex flex-wrap gap-4">
-              <span className="px-6 py-2 bg-white border-2 border-mango-dark font-bold uppercase text-lg">Daily Heatmap</span>
-              <span className="px-6 py-2 bg-white border-2 border-mango-dark font-bold uppercase text-lg">Goal Pacing</span>
-              <span className="px-6 py-2 bg-white border-2 border-mango-dark font-bold uppercase text-lg">Flow State</span>
+            <ul className="space-y-4 text-mango-dark font-medium">
+              <li className="flex items-center gap-3">
+                <CheckCircle className="h-5 w-5 text-mango-yellow" />
+                Weekly totals and daily averages at a glance
+              </li>
+              <li className="flex items-center gap-3">
+                <CheckCircle className="h-5 w-5 text-mango-orange" />
+                Category breakdown with progress tracking
+              </li>
+              <li className="flex items-center gap-3">
+                <CheckCircle className="h-5 w-5 text-mango-red" />
+                Mastery pacing to hit your 10,000 hour goal
+              </li>
+            </ul>
+            <div className="flex flex-wrap gap-4 pt-4">
+              <SignedOut>
+                <CTAButton
+                  variant="primary"
+                  ctaName="Start Tracking"
+                  ctaLocation="insights"
+                  isSignUp={true}
+                >
+                  Start Tracking
+                </CTAButton>
+              </SignedOut>
+              <SignedIn>
+                <CTAButton
+                  href="/app/now"
+                  variant="primary"
+                  ctaName="Start Tracking"
+                  ctaLocation="insights"
+                >
+                  Start Tracking
+                </CTAButton>
+              </SignedIn>
             </div>
           </div>
           
-          {/* Chart Card */}
-          <div className="distressed-card p-10 order-1 lg:order-2">
-            <div className="flex justify-between items-center mb-10">
-              <h3 className="font-black text-3xl uppercase">Weekly Distribution</h3>
-              <span className="font-bold text-xs uppercase bg-mango-dark text-white px-3 py-1">Last 7 Days</span>
-            </div>
-            
-            <div className="flex items-end justify-between h-64 gap-3">
-              {weeklyData.map((day, index) => (
-                <div key={index} className="flex-1 flex flex-col items-center gap-2 h-full">
-                  <div 
-                    className={`w-full ${day.color} border-2 border-mango-dark`}
-                    style={{ height: day.height }}
-                  />
-                  <span className="font-black text-xs">{day.day}</span>
+          {/* Insights Cards */}
+          <div className="order-1 lg:order-2 space-y-6">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 gap-4">
+              {insightStats.map((stat, index) => (
+                <div 
+                  key={stat.label}
+                  className="distressed-card p-5 animate-bounce-soft"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className="text-[10px] uppercase font-black text-slate-500 tracking-widest mb-1">{stat.label}</div>
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <div className="text-3xl font-black">{stat.value}</div>
+                      <div className="text-xs text-slate-400">{stat.sublabel}</div>
+                    </div>
+                    {stat.change && (
+                      <span className={`text-sm font-bold ${stat.positive ? 'text-mango-green' : 'text-mango-red'}`}>
+                        {stat.change}
+                      </span>
+                    )}
+                    {stat.ratio && (
+                      <span className="text-sm font-bold text-mango-orange">{stat.ratio}</span>
+                    )}
+                  </div>
                 </div>
               ))}
+            </div>
+            
+            {/* Category Breakdown */}
+            <div className="distressed-card p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="font-black text-xl uppercase">Category Breakdown</h3>
+                <span className="font-bold text-xs uppercase bg-mango-dark text-white px-3 py-1">This Week</span>
+              </div>
+              
+              <div className="space-y-5">
+                {categoryBreakdown.map((cat, index) => (
+                  <div 
+                    key={cat.name}
+                    className="animate-bounce-soft"
+                    style={{ animationDelay: `${index * 0.15}s` }}
+                  >
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-3 h-3 rounded-full ${cat.color}`}></div>
+                        <span className="font-bold">{cat.name}</span>
+                      </div>
+                      <span className="font-black text-lg">{cat.hours}</span>
+                    </div>
+                    <div className="h-2 bg-slate-100 border border-mango-dark overflow-hidden">
+                      <div 
+                        className={`h-full ${cat.color} transition-all duration-1000 ease-out`}
+                        style={{ width: `${cat.percent}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Mastery Pace Card */}
+            <div className="distressed-card p-6 bg-mango-dark text-white animate-bounce-soft" style={{ animationDelay: '0.4s' }}>
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-mango-green flex items-center justify-center">
+                    <CheckCircle className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="text-xs uppercase font-bold tracking-widest text-slate-300">Mastery Pace</span>
+                </div>
+                <span className="text-mango-yellow text-xs font-bold uppercase cursor-pointer hover:underline">View Plan →</span>
+              </div>
+              <h4 className="font-black text-2xl mb-2">ML Engineering — 4,212 / 10,000 hrs</h4>
+              <p className="text-sm text-slate-300 mb-4">Reach 10k hrs by Feb 2028. Pace needed: 18.5h/week · You&apos;re at 14.2.</p>
+              <div className="h-3 bg-slate-700 border border-slate-500 overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-mango-red via-mango-orange to-mango-yellow" style={{ width: '42%' }} />
+              </div>
             </div>
           </div>
         </div>
@@ -251,19 +397,24 @@ export default function Home() {
             Make it <span className="text-mango-green">count.</span>
           </h2>
           <SignedOut>
-            <SignUpButton mode="modal">
-              <button className="px-16 py-8 bg-mango-yellow text-mango-dark border-4 border-white font-black text-3xl lg:text-4xl uppercase hover:scale-105 hover:-rotate-2 transition-all shadow-[8px_8px_0px_#E62E2D]">
-                Start Your Journey
-              </button>
-            </SignUpButton>
-          </SignedOut>
-          <SignedIn>
-            <Link 
-              href="/app/now"
-              className="inline-block px-16 py-8 bg-mango-yellow text-mango-dark border-4 border-white font-black text-3xl lg:text-4xl uppercase hover:scale-105 hover:-rotate-2 transition-all shadow-[8px_8px_0px_#E62E2D]"
+            <CTAButton
+              variant="final"
+              ctaName="Start Your Journey"
+              ctaLocation="footer"
+              isSignUp={true}
             >
               Start Your Journey
-            </Link>
+            </CTAButton>
+          </SignedOut>
+          <SignedIn>
+            <CTAButton
+              href="/app/now"
+              variant="final"
+              ctaName="Start Your Journey"
+              ctaLocation="footer"
+            >
+              Start Your Journey
+            </CTAButton>
           </SignedIn>
         </div>
       </main>

@@ -4,6 +4,7 @@ import { getDb } from "@/lib/db"
 import { createSessionSchema } from "@/lib/schemas"
 import { Session } from "@/lib/types"
 import { z } from "zod"
+import { getPostHogClient } from "@/lib/posthog-server"
 
 export const dynamic = 'force-dynamic'
 
@@ -115,7 +116,22 @@ export async function POST(req: NextRequest) {
     
     // Insert session
     const result = await db.collection("sessions").insertOne(session)
-    
+
+    // Track server-side session creation
+    const posthog = getPostHogClient()
+    posthog.capture({
+      distinctId: userId,
+      event: 'api_session_created',
+      properties: {
+        session_id: result.insertedId.toString(),
+        category_id: validatedData.categoryId,
+        category_name: category.name,
+        session_title: validatedData.title,
+        has_end_time: !!validatedData.end,
+        source: 'api',
+      }
+    })
+
     return NextResponse.json({
       _id: result.insertedId.toString(),
       ...session

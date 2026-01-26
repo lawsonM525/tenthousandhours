@@ -5,7 +5,7 @@ import { Session } from "@/lib/types"
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const { userId } = await auth()
     if (!userId) {
