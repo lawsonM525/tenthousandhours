@@ -508,10 +508,8 @@ export default function Home() {
             <p className="font-bold text-[10px] sm:text-xs uppercase tracking-widest text-slate-400 text-center md:text-left">© 2025. Built for those who chase mastery.</p>
           </div>
           <div className="flex flex-wrap justify-center gap-4 sm:gap-8 lg:gap-12 text-xs sm:text-sm font-black uppercase tracking-widest text-mango-dark">
-            <a className="hover:text-mango-red underline decoration-2 sm:decoration-4 decoration-mango-yellow" href="https://lwsnlabs.featurebase.app" target="_blank" rel="noopener noreferrer">Feedback</a>
-            <a className="hover:text-mango-red underline decoration-2 sm:decoration-4 decoration-mango-red" href="#">Privacy</a>
-            <a className="hover:text-mango-red underline decoration-2 sm:decoration-4 decoration-mango-orange" href="#">Terms</a>
-            <a className="hover:text-mango-red underline decoration-2 sm:decoration-4 decoration-mango-dark" href="#">Support</a>
+            <Link className="hover:text-mango-red underline decoration-2 sm:decoration-4 decoration-mango-yellow" href="/support">Support</Link>
+            <Link className="hover:text-mango-red underline decoration-2 sm:decoration-4 decoration-mango-red" href="/privacy">Privacy</Link>
           </div>
         </div>
       </footer>
