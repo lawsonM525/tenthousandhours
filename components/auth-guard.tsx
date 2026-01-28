@@ -27,41 +27,43 @@ export function AuthGuard({ children }: AuthGuardProps) {
   // If not signed in, show sign-in modal overlay
   if (!isSignedIn) {
     return (
-      <div className="h-screen flex flex-col mango-pattern">
+      <div className="min-h-screen mango-pattern">
         {/* Blurred/dimmed background hint of the dashboard */}
-        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-40" />
+        <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-40" />
 
-        {/* Auth modal overlay */}
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-md">
-            <div className="text-center mb-6">
-              <div className="inline-block bg-mango-red px-4 py-2 border-2 border-mango-dark transform -rotate-1 mb-4">
-                <span className="font-bold text-sm uppercase text-white">Sign In Required</span>
+        {/* Auth modal overlay - scrollable on mobile */}
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="min-h-full flex items-center justify-center p-4 py-8 sm:py-12">
+            <div className="w-full max-w-md">
+              <div className="text-center mb-4 sm:mb-6">
+                <div className="inline-block bg-mango-red px-3 sm:px-4 py-1.5 sm:py-2 border-2 border-mango-dark transform -rotate-1 mb-3 sm:mb-4">
+                  <span className="font-bold text-xs sm:text-sm uppercase text-white">Sign In Required</span>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-black uppercase text-mango-dark mb-2">
+                  Track Your 10,000 Hours
+                </h2>
+                <p className="text-sm sm:text-base text-mango-dark/70 font-medium px-2">
+                  Sign in or create an account to start tracking your deep work sessions.
+                </p>
               </div>
-              <h2 className="text-2xl font-black uppercase text-mango-dark mb-2">
-                Track Your 10,000 Hours
-              </h2>
-              <p className="text-mango-dark/70 font-medium">
-                Sign in or create an account to start tracking your deep work sessions.
-              </p>
-            </div>
 
-            <SignIn
-              appearance={{
-                elements: {
-                  rootBox: "mx-auto w-full",
-                  card: "border-4 border-mango-dark shadow-[8px_8px_0px_#1a1a1a] bg-white",
-                  headerTitle: "font-black uppercase text-mango-dark",
-                  headerSubtitle: "text-mango-dark/70",
-                  formButtonPrimary: "bg-mango-orange hover:bg-mango-yellow text-mango-dark font-bold uppercase border-2 border-mango-dark shadow-[3px_3px_0px_#1a1a1a]",
-                  formFieldInput: "border-2 border-mango-dark",
-                  footerActionLink: "text-mango-red hover:text-mango-orange font-bold",
-                }
-              }}
-              afterSignInUrl="/app/now"
-              signUpUrl="/sign-up"
-              routing="hash"
-            />
+              <SignIn
+                appearance={{
+                  elements: {
+                    rootBox: "mx-auto w-full",
+                    card: "border-2 sm:border-4 border-mango-dark shadow-[4px_4px_0px_#1a1a1a] sm:shadow-[8px_8px_0px_#1a1a1a] bg-white",
+                    headerTitle: "font-black uppercase text-mango-dark text-lg sm:text-xl",
+                    headerSubtitle: "text-mango-dark/70 text-sm",
+                    formButtonPrimary: "bg-mango-orange hover:bg-mango-yellow text-mango-dark font-bold uppercase border-2 border-mango-dark shadow-[2px_2px_0px_#1a1a1a] sm:shadow-[3px_3px_0px_#1a1a1a]",
+                    formFieldInput: "border-2 border-mango-dark text-base",
+                    footerActionLink: "text-mango-red hover:text-mango-orange font-bold",
+                  }
+                }}
+                afterSignInUrl="/app/now"
+                signUpUrl="/sign-up"
+                routing="hash"
+              />
+            </div>
           </div>
         </div>
       </div>
