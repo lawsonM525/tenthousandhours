@@ -97,7 +97,8 @@ export default function MementoMoriPage() {
                     type="date"
                     value={birthDate}
                     onChange={(e) => setBirthDate(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-mango-dark bg-white font-bold text-lg focus:outline-none focus:ring-2 focus:ring-mango-orange"
+                    className="w-full px-4 py-3 border-2 border-mango-dark bg-white font-bold text-lg focus:outline-none focus:ring-2 focus:ring-mango-orange appearance-none text-left"
+                    style={{ textAlign: 'left' }}
                   />
                 </div>
 
