@@ -34,6 +34,7 @@ export default function MementoMoriPage() {
     
     setDaysLeft(Math.max(0, remaining));
     setShowResult(true);
+    window.scrollTo(0, 0);
   };
 
   const reset = () => {
@@ -77,10 +78,6 @@ export default function MementoMoriPage() {
               <h1 className="text-5xl lg:text-7xl xl:text-8xl font-black leading-none uppercase text-white drop-shadow-[4px_4px_0px_#1a1a1a] mb-6">
                 Memento <span className="text-mango-yellow italic">Mori</span>
               </h1>
-              
-              <p className="text-xl font-medium text-mango-dark bg-white/40 p-6 border-l-4 border-mango-dark backdrop-blur-sm max-w-2xl mx-auto">
-                Life is finite. Knowing how many days you have left can transform how you spend each one.
-              </p>
             </div>
 
             {/* Form Card */}
