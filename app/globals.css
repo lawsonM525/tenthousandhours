@@ -166,6 +166,25 @@
   }
 }
 
+/* Fix date input alignment on mobile */
+input[type="date"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  text-align: left;
+  min-height: 48px;
+}
+
+input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+}
+
+/* Ensure date picker icon stays visible on webkit browsers */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 1;
+  cursor: pointer;
+}
+
 /* Ensure proper viewport behavior */
 html {
   -webkit-text-size-adjust: 100%;
