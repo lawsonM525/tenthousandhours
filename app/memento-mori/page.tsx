@@ -165,7 +165,7 @@ export default function MementoMoriPage() {
                   {daysLeft?.toLocaleString()}
                 </div>
                 <div className="text-3xl lg:text-4xl font-black uppercase text-mango-dark mt-4">
-                  Days Left
+                  days left here
                 </div>
               </div>
               
@@ -199,8 +199,8 @@ export default function MementoMoriPage() {
               </p>
 
               {/* CTA */}
-              <div className="bg-mango-dark border-4 border-white shadow-[12px_12px_0px_#FFB31A] p-12 max-w-2xl mx-auto">
-                <h2 className="font-black text-6xl lg:text-8xl uppercase text-white mb-8">
+              <div className="bg-mango-dark border-4 border-white shadow-[6px_6px_0px_#FFB31A] sm:shadow-[12px_12px_0px_#FFB31A] p-6 sm:p-12 max-w-2xl mx-auto">
+                <h2 className="font-black text-4xl sm:text-6xl lg:text-8xl uppercase text-white mb-8">
                   LIVE.
                 </h2>
                 <p className="text-lg text-white/60 mb-8 max-w-md mx-auto">
