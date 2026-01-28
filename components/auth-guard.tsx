@@ -15,10 +15,15 @@ export function AuthGuard({ children }: AuthGuardProps) {
     return (
       <div className="h-screen flex items-center justify-center mango-pattern">
         <div className="distressed-card p-8 text-center">
-          <div className="animate-pulse">
-            <div className="w-16 h-16 bg-mango-orange rounded-full mx-auto mb-4"></div>
-            <p className="font-bold uppercase text-mango-dark">Loading...</p>
-          </div>
+          <div className="w-16 h-16 bg-mango-orange rounded-full mx-auto mb-4 animate-[pulse_1.5s_ease-in-out_infinite]"></div>
+          <p className="font-bold uppercase text-mango-dark">
+            Loading
+            <span className="inline-flex ml-1">
+              <span className="animate-bounce" style={{ animationDuration: '1s' }}>.</span>
+              <span className="animate-bounce" style={{ animationDuration: '1s', animationDelay: '0.15s' }}>.</span>
+              <span className="animate-bounce" style={{ animationDuration: '1s', animationDelay: '0.3s' }}>.</span>
+            </span>
+          </p>
         </div>
       </div>
     )
