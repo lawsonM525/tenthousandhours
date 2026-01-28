@@ -155,7 +155,7 @@ export default function MementoMoriPage() {
                 <span className="font-bold text-sm uppercase text-mango-yellow">Your remaining time</span>
               </div>
               
-              <h1 className="text-5xl lg:text-6xl font-black uppercase text-white drop-shadow-[4px_4px_0px_#1a1a1a] mb-8">
+              <h1 className="text-2xl sm:text-4xl lg:text-6xl font-black uppercase text-white drop-shadow-[4px_4px_0px_#1a1a1a] mb-8">
                 You have approximately
               </h1>
               
@@ -172,24 +172,24 @@ export default function MementoMoriPage() {
               
 
               {/* Perspective Stats */}
-              <div className="grid md:grid-cols-3 gap-4 max-w-3xl mx-auto mb-16">
-                <div className="bg-white/90 border-2 border-mango-dark p-6 shadow-[4px_4px_0px_#000]">
-                  <div className="text-3xl font-black text-mango-orange">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4 max-w-3xl mx-auto mb-16">
+                <div className="bg-white/90 border-2 border-mango-dark p-3 sm:p-6 shadow-[2px_2px_0px_#000] sm:shadow-[4px_4px_0px_#000]">
+                  <div className="text-lg sm:text-3xl font-black text-mango-orange">
                     {daysLeft ? Math.floor(daysLeft / 7).toLocaleString() : 0}
                   </div>
-                  <div className="font-bold text-sm uppercase">Weeks</div>
+                  <div className="font-bold text-xs sm:text-sm uppercase">Weeks</div>
                 </div>
-                <div className="bg-white/90 border-2 border-mango-dark p-6 shadow-[4px_4px_0px_#000]">
-                  <div className="text-3xl font-black text-mango-yellow">
+                <div className="bg-white/90 border-2 border-mango-dark p-3 sm:p-6 shadow-[2px_2px_0px_#000] sm:shadow-[4px_4px_0px_#000]">
+                  <div className="text-lg sm:text-3xl font-black text-mango-yellow">
                     {daysLeft ? Math.floor(daysLeft / 30).toLocaleString() : 0}
                   </div>
-                  <div className="font-bold text-sm uppercase">Months</div>
+                  <div className="font-bold text-xs sm:text-sm uppercase">Months</div>
                 </div>
-                <div className="bg-white/90 border-2 border-mango-dark p-6 shadow-[4px_4px_0px_#000]">
-                  <div className="text-3xl font-black text-mango-green">
+                <div className="bg-white/90 border-2 border-mango-dark p-3 sm:p-6 shadow-[2px_2px_0px_#000] sm:shadow-[4px_4px_0px_#000]">
+                  <div className="text-lg sm:text-3xl font-black text-mango-green">
                     {daysLeft ? (daysLeft / 365).toFixed(1) : 0}
                   </div>
-                  <div className="font-bold text-sm uppercase">Years</div>
+                  <div className="font-bold text-xs sm:text-sm uppercase">Years</div>
                 </div>
               </div>
 
