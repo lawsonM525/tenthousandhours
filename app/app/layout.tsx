@@ -3,15 +3,16 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { 
-  Clock, 
-  Calendar, 
-  BarChart3, 
-  FileText, 
+import {
+  Clock,
+  Calendar,
+  BarChart3,
+  FileText,
   Settings,
-  MessageSquare 
+  MessageSquare
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { AuthGuard } from "@/components/auth-guard"
 
 const navigation = [
   { name: "Track", href: "/app/now", icon: Clock, color: "mango-red" },
@@ -29,6 +30,7 @@ export default function AppLayout({
   const pathname = usePathname()
 
   return (
+    <AuthGuard>
     <div className="h-screen flex flex-col lg:flex-row mango-pattern">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex lg:flex-col lg:w-72 bg-white border-r-4 border-mango-dark">
@@ -115,5 +117,6 @@ export default function AppLayout({
         </div>
       </nav>
     </div>
+    </AuthGuard>
   )
 }
