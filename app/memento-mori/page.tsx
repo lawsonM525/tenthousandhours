@@ -34,6 +34,7 @@ export default function MementoMoriPage() {
     
     setDaysLeft(Math.max(0, remaining));
     setShowResult(true);
+    window.scrollTo(0, 0);
   };
 
   const reset = () => {
@@ -77,10 +78,6 @@ export default function MementoMoriPage() {
               <h1 className="text-5xl lg:text-7xl xl:text-8xl font-black leading-none uppercase text-white drop-shadow-[4px_4px_0px_#1a1a1a] mb-6">
                 Memento <span className="text-mango-yellow italic">Mori</span>
               </h1>
-              
-              <p className="text-xl font-medium text-mango-dark bg-white/40 p-6 border-l-4 border-mango-dark backdrop-blur-sm max-w-2xl mx-auto">
-                Life is finite. Knowing how many days you have left can transform how you spend each one.
-              </p>
             </div>
 
             {/* Form Card */}
@@ -155,7 +152,7 @@ export default function MementoMoriPage() {
                 <span className="font-bold text-sm uppercase text-mango-yellow">Your remaining time</span>
               </div>
               
-              <h1 className="text-5xl lg:text-6xl font-black uppercase text-white drop-shadow-[4px_4px_0px_#1a1a1a] mb-8">
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black uppercase text-white drop-shadow-[4px_4px_0px_#1a1a1a] mb-8">
                 You have approximately
               </h1>
               
@@ -165,31 +162,31 @@ export default function MementoMoriPage() {
                   {daysLeft?.toLocaleString()}
                 </div>
                 <div className="text-3xl lg:text-4xl font-black uppercase text-mango-dark mt-4">
-                  Days Left
+                  days left here
                 </div>
               </div>
               
               
 
               {/* Perspective Stats */}
-              <div className="grid md:grid-cols-3 gap-4 max-w-3xl mx-auto mb-16">
-                <div className="bg-white/90 border-2 border-mango-dark p-6 shadow-[4px_4px_0px_#000]">
-                  <div className="text-3xl font-black text-mango-orange">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4 max-w-3xl mx-auto mb-16">
+                <div className="bg-white/90 border-2 border-mango-dark p-3 sm:p-6 shadow-[2px_2px_0px_#000] sm:shadow-[4px_4px_0px_#000]">
+                  <div className="text-xl sm:text-3xl font-black text-mango-orange">
                     {daysLeft ? Math.floor(daysLeft / 7).toLocaleString() : 0}
                   </div>
-                  <div className="font-bold text-sm uppercase">Weeks</div>
+                  <div className="font-bold text-xs sm:text-sm uppercase">Weeks</div>
                 </div>
-                <div className="bg-white/90 border-2 border-mango-dark p-6 shadow-[4px_4px_0px_#000]">
-                  <div className="text-3xl font-black text-mango-yellow">
+                <div className="bg-white/90 border-2 border-mango-dark p-3 sm:p-6 shadow-[2px_2px_0px_#000] sm:shadow-[4px_4px_0px_#000]">
+                  <div className="text-xl sm:text-3xl font-black text-mango-yellow">
                     {daysLeft ? Math.floor(daysLeft / 30).toLocaleString() : 0}
                   </div>
-                  <div className="font-bold text-sm uppercase">Months</div>
+                  <div className="font-bold text-xs sm:text-sm uppercase">Months</div>
                 </div>
-                <div className="bg-white/90 border-2 border-mango-dark p-6 shadow-[4px_4px_0px_#000]">
-                  <div className="text-3xl font-black text-mango-green">
+                <div className="bg-white/90 border-2 border-mango-dark p-3 sm:p-6 shadow-[2px_2px_0px_#000] sm:shadow-[4px_4px_0px_#000]">
+                  <div className="text-xl sm:text-3xl font-black text-mango-green">
                     {daysLeft ? (daysLeft / 365).toFixed(1) : 0}
                   </div>
-                  <div className="font-bold text-sm uppercase">Years</div>
+                  <div className="font-bold text-xs sm:text-sm uppercase">Years</div>
                 </div>
               </div>
 
@@ -199,8 +196,8 @@ export default function MementoMoriPage() {
               </p>
 
               {/* CTA */}
-              <div className="bg-mango-dark border-4 border-white shadow-[12px_12px_0px_#FFB31A] p-12 max-w-2xl mx-auto">
-                <h2 className="font-black text-6xl lg:text-8xl uppercase text-white mb-8">
+              <div className="bg-mango-dark border-4 border-white shadow-[6px_6px_0px_#FFB31A] sm:shadow-[12px_12px_0px_#FFB31A] p-6 sm:p-12 max-w-2xl mx-auto">
+                <h2 className="font-black text-4xl sm:text-6xl lg:text-8xl uppercase text-white mb-8">
                   LIVE.
                 </h2>
                 <p className="text-lg text-white/60 mb-8 max-w-md mx-auto">
