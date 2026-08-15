@@ -469,7 +469,7 @@ export default function TimelinePage() {
                       {format(selectedDate, 'EEEE, MMMM d')}
                     </p>
                     <h3 className="text-lg sm:text-2xl font-black text-mango-dark mt-1">
-                      {formatDuration(totalMinutes)} focus logged
+                      {formatDuration(totalMinutes)} time tracked
                     </h3>
                   </div>
                   <div className="text-right">
@@ -515,15 +515,15 @@ export default function TimelinePage() {
                         const durationMinutes = Math.max((endTime.getTime() - startTime.getTime()) / 60000, 15)
                         const topOffsetMobile = (startHour * 32) + (startMinutes / 60 * 32)
                         const topOffsetDesktop = (startHour * 48) + (startMinutes / 60 * 48)
-                        const heightMobile = Math.max((durationMinutes / 60) * 32, 16)
-                        const heightDesktop = Math.max((durationMinutes / 60) * 48, 20)
+                        const heightMobile = Math.max((durationMinutes / 60) * 32, 10)
+                        const heightDesktop = Math.max((durationMinutes / 60) * 48, 12)
 
                         return (
                           <button
                             key={`${event.calendarId}-${event.id}`}
                             data-calendar-event-id={eventDomId}
                             onClick={() => openGoogleEventDialog(event)}
-                            className="absolute left-1 right-1 border-2 border-dashed border-blue-500 bg-blue-100/90 p-1.5 sm:p-2 text-left overflow-hidden hover:bg-blue-200 transition-colors z-10"
+                            className="absolute left-1 right-1 border border-dashed border-blue-500 bg-blue-100/90 px-1 py-0 sm:px-1.5 text-left overflow-hidden hover:bg-blue-200 transition-colors z-10"
                             style={{
                               top: `var(--event-top-offset)`,
                               height: `var(--event-height)`,
@@ -540,10 +540,9 @@ export default function TimelinePage() {
                                 }
                               }
                             `}</style>
-                            <span className="block text-[9px] sm:text-[10px] font-black uppercase text-blue-700 truncate">
-                              {format(startTime, 'HH:mm')} · {event.calendarSummary || 'Google Calendar'}
+                            <span className="block text-[8px] sm:text-[10px] leading-none font-black text-blue-950 truncate">
+                              {format(startTime, 'HH:mm')} · {event.summary}
                             </span>
-                            <span className="block text-xs font-bold text-blue-950 truncate">{event.summary}</span>
                           </button>
                         )
                       })}
@@ -641,7 +640,7 @@ export default function TimelinePage() {
                       Week of {format(dateRange.start, 'MMMM d')}
                     </p>
                     <h3 className="text-lg sm:text-2xl font-black text-mango-dark mt-1">
-                      {formatDuration(totalMinutes)} focus logged
+                      {formatDuration(totalMinutes)} time tracked
                     </h3>
                   </div>
                   <div className="text-right">
@@ -703,12 +702,12 @@ export default function TimelinePage() {
                               const endTime = new Date(event.end)
                               const topOffset = (startTime.getHours() * 32) + (startTime.getMinutes() / 60 * 32)
                               const durationMinutes = Math.max((endTime.getTime() - startTime.getTime()) / 60000, 15)
-                              const height = Math.max((durationMinutes / 60) * 32, 16)
+                              const height = Math.max((durationMinutes / 60) * 32, 10)
                               return (
                                 <button
                                   key={`${event.calendarId}-${event.id}`}
                                   onClick={() => openGoogleEventDialog(event)}
-                                  className="absolute left-0.5 right-0.5 border border-dashed border-blue-600 bg-blue-100/90 text-left overflow-hidden pointer-events-auto z-10"
+                                  className="absolute left-0.5 right-0.5 border border-dashed border-blue-600 bg-blue-100/90 text-left overflow-hidden pointer-events-auto z-10 leading-none"
                                   style={{ top: `${topOffset}px`, height: `${height}px` }}
                                 >
                                   <span className="block px-0.5 text-[8px] font-black text-blue-800 truncate">{format(startTime, 'HH:mm')} · {event.summary}</span>
