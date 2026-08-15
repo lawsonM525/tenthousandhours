@@ -4,6 +4,7 @@ import { aiInsightSchema, insightRequestSchema } from "@/lib/ai-schemas"
 import { aiErrorResponse, getGeminiClient, getGeminiModel, requirePremiumAiUser, reserveAiUsage } from "@/lib/premium-ai"
 import { getDb } from "@/lib/db"
 import { Category, Session } from "@/lib/types"
+import { buildInsightPayload } from "@/lib/insight-payload"
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -26,6 +27,11 @@ export async function POST(req: NextRequest) {
     const input = insightRequestSchema.parse(await req.json())
     const startDate = new Date(input.startDate)
     const endDate = new Date(input.endDate)
+    try {
+      new Intl.DateTimeFormat('en-US', { timeZone: input.timezone }).format(startDate)
+    } catch {
+      return NextResponse.json({ error: 'Invalid timezone' }, { status: 400 })
+    }
     const rangeDays = (endDate.getTime() - startDate.getTime()) / 86_400_000
     const maximumDays = input.granularity === 'day' ? 2 : input.granularity === 'week' ? 8 : 32
     if (endDate <= startDate || rangeDays > maximumDays) {
@@ -38,6 +44,7 @@ export async function POST(req: NextRequest) {
       granularity: input.granularity,
       startDate,
       endDate,
+      timezone: input.timezone,
       version: 1,
     }
     const cached = await db.collection('ai_summaries').findOne(cacheKey)
@@ -58,28 +65,17 @@ export async function POST(req: NextRequest) {
     }
 
     const categoryNames = new Map(categories.map((category) => [category._id.toString(), category.name]))
-    const totals = new Map<string, number>()
-    for (const session of sessions) {
-      const name = categoryNames.get(session.categoryId.toString()) || 'Uncategorized'
-      totals.set(name, (totals.get(name) || 0) + (session.durationMin || 0))
-    }
+    const compactData = buildInsightPayload({
+      granularity: input.granularity,
+      startDate,
+      endDate,
+      timezone: input.timezone,
+      sessions,
+      categoryNames,
+    })
 
-    const compactData = {
-      period: input.granularity,
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-      totalMinutes: sessions.reduce((sum, session) => sum + (session.durationMin || 0), 0),
-      categories: Array.from(totals, ([name, minutes]) => ({ name, minutes })),
-      sessions: sessions.map((session) => ({
-        title: session.sourceType === 'google_calendar' ? 'Calendar session' : session.title,
-        category: categoryNames.get(session.categoryId.toString()) || 'Uncategorized',
-        start: new Date(session.start).toISOString(),
-        durationMinutes: session.durationMin || 0,
-      })),
-    }
-
-    const usage = await reserveAiUsage(userId, 'insight')
     const ai = getGeminiClient()
+    const usage = await reserveAiUsage(userId, 'insight')
     const response = await ai.models.generateContent({
       model: getGeminiModel(),
       contents: `Analyze this time-tracking data and return only the requested structured insight. Do not invent motives, diagnoses, or events. Be warm, direct, and useful.\n\n${JSON.stringify(compactData)}`,

@@ -10,7 +10,7 @@ type AccountStatus = {
 }
 
 export function PremiumBetaCard() {
-  const [account, setAccount] = useState<AccountStatus | null>(null)
+  const [account, setAccount] = useState<AccountStatus | null | undefined>(undefined)
 
   useEffect(() => {
     fetch('/api/account')
@@ -27,10 +27,12 @@ export function PremiumBetaCard() {
         </div>
         <div className="min-w-0">
           <p className="text-xs font-black uppercase tracking-widest text-mango-orange">Premium beta</p>
-          {!account ? (
+          {account === undefined ? (
             <p className="mt-2 flex items-center gap-2 text-sm font-bold text-slate-500">
               <Loader2 className="h-4 w-4 animate-spin" /> Checking your access…
             </p>
+          ) : account === null ? (
+            <p className="mt-2 text-sm font-bold text-mango-red">Could not load your beta status. Refresh the page to try again.</p>
           ) : account.isPremium ? (
             <>
               <h2 className="mt-1 text-xl font-black uppercase text-mango-dark">You&apos;re in</h2>

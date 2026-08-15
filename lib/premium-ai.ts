@@ -36,16 +36,50 @@ export async function reserveAiUsage(userId: string, feature: AiFeature) {
   const periodStart = new Date()
   periodStart.setUTCDate(1)
   periodStart.setUTCHours(0, 0, 0, 0)
+  const periodKey = periodStart.toISOString().slice(0, 7)
 
   const db = await getDb()
-  const usage = db.collection('ai_usage')
-  const used = await usage.countDocuments({ userId, feature, createdAt: { $gte: periodStart } })
-  if (used >= limit) {
-    throw new AiAccessError(`Monthly ${feature} limit reached`, 429)
-  }
+  const counterId = `${userId}:${feature}:${periodKey}`
+  const counters = db.collection<{
+    _id: string
+    userId: string
+    feature: AiFeature
+    periodKey: string
+    count: number
+    createdAt: Date
+    updatedAt: Date
+  }>('ai_usage_counters')
+  const now = new Date()
 
-  await usage.insertOne({ userId, feature, createdAt: new Date() })
-  return { used: used + 1, limit }
+  try {
+    const counter = await counters.findOneAndUpdate(
+      {
+        _id: counterId,
+        $or: [{ count: { $lt: limit } }, { count: { $exists: false } }],
+      },
+      {
+        $inc: { count: 1 },
+        $set: { updatedAt: now },
+        $setOnInsert: { userId, feature, periodKey, createdAt: now },
+      },
+      { upsert: true, returnDocument: 'after' },
+    )
+    if (!counter) throw new AiAccessError(`Monthly ${feature} limit reached`, 429)
+
+    await db.collection('ai_usage').insertOne({
+      userId,
+      feature,
+      periodKey,
+      sequence: counter.count,
+      createdAt: now,
+    })
+    return { used: counter.count, limit }
+  } catch (error: any) {
+    if (error instanceof AiAccessError || error?.code === 11000) {
+      throw new AiAccessError(`Monthly ${feature} limit reached`, 429)
+    }
+    throw error
+  }
 }
 
 export function getGeminiClient() {

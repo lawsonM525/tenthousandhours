@@ -6,6 +6,7 @@ export const insightRequestSchema = z.object({
   granularity: insightGranularitySchema,
   startDate: z.string().datetime(),
   endDate: z.string().datetime(),
+  timezone: z.string().min(1).max(100).default('UTC'),
 })
 
 export const aiInsightSchema = z.object({

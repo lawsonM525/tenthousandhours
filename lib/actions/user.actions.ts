@@ -170,6 +170,7 @@ export async function deleteUser(clerkId: string) {
     db.collection('summaries').deleteMany({ userId: clerkId }),
     db.collection('ai_summaries').deleteMany({ userId: clerkId }),
     db.collection('ai_usage').deleteMany({ userId: clerkId }),
+    db.collection('ai_usage_counters').deleteMany({ userId: clerkId }),
   ])
   return user
 }

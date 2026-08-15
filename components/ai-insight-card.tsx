@@ -81,6 +81,7 @@ export function AiInsightCard() {
           granularity,
           startDate: range.start.toISOString(),
           endDate: range.end.toISOString(),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         }),
       })
       const body = await response.json()

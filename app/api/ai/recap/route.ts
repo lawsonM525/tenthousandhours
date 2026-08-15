@@ -9,7 +9,7 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const allowedAudioTypes = new Set(['audio/webm', 'audio/mp4', 'audio/mpeg', 'audio/wav', 'audio/x-wav'])
-const maxAudioBytes = 10 * 1024 * 1024
+const maxAudioBytes = 4 * 1024 * 1024
 
 const responseJsonSchema = {
   type: 'object',
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
 
     const audioMimeType = audio instanceof File ? audio.type.split(';')[0] : ''
     if (!(audio instanceof File) || !allowedAudioTypes.has(audioMimeType) || audio.size === 0 || audio.size > maxAudioBytes) {
-      return NextResponse.json({ error: 'Please record an audio note under 10 MB' }, { status: 400 })
+      return NextResponse.json({ error: 'Please record an audio note under 4 MB' }, { status: 400 })
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(selectedDate)) {
       return NextResponse.json({ error: 'Invalid recap date' }, { status: 400 })
@@ -62,9 +62,8 @@ export async function POST(req: NextRequest) {
 
     const allowedCategoryIds = new Set(categories.map((category) => category._id.toString()))
     const categoryOptions = categories.map((category) => ({ id: category._id.toString(), name: category.name }))
-    await reserveAiUsage(userId, 'recap')
-
     const ai = getGeminiClient()
+    await reserveAiUsage(userId, 'recap')
     const audioBase64 = Buffer.from(await audio.arrayBuffer()).toString('base64')
     const prompt = [
       'Transcribe this end-of-day voice recap and extract proposed time-tracking sessions.',

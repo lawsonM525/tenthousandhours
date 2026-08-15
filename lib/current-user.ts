@@ -1,5 +1,6 @@
 import { currentUser } from "@clerk/nextjs/server"
 import { createUser, getUserById } from "@/lib/actions/user.actions"
+export { hasPremiumAccess } from "@/lib/premium-access"
 
 export async function getOrCreateCurrentUser(clerkId: string) {
   const existing = await getUserById(clerkId)
@@ -22,10 +23,4 @@ export async function getOrCreateCurrentUser(clerkId: string) {
     lastName: clerkUser.lastName,
     photo: clerkUser.imageUrl,
   })
-}
-
-export function hasPremiumAccess(user: any) {
-  if (!user || user.plan !== 'premium' || user.premiumBeta?.status !== 'active') return false
-  if (!user.premiumBeta.expiresAt) return true
-  return new Date(user.premiumBeta.expiresAt).getTime() > Date.now()
 }

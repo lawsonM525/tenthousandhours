@@ -81,6 +81,10 @@ export function DailyRecall({ selectedDate, categories }: { selectedDate: Date; 
     setDrafts([])
     setTranscript('')
     try {
+      if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+        setError('Voice recording is not supported in this browser. Try current Chrome, Safari, or Edge.')
+        return
+      }
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       streamRef.current = stream
       const preferredMimeType = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm']
