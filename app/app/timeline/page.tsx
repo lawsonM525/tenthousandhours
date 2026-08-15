@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, type PointerEvent as ReactPointerEvent } from "react"
 import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, addDays, isToday, isSameDay, eachDayOfInterval } from "date-fns"
 import { ChevronLeft, ChevronRight, Calendar, Trash2, Plus, Eye, EyeOff } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -18,7 +18,14 @@ import { useNotes, useCreateNote } from "@/lib/hooks/use-notes"
 import { Session, Category, GoogleCalendarEvent } from "@/lib/types"
 import { useToast } from "@/components/ui/use-toast"
 import { useGoogleCalendarEvents, useGoogleCalendarStatus } from "@/lib/hooks/use-google-calendar"
+import { calculateResizedTimeRange } from "@/lib/timeline-resize"
 import posthog from 'posthog-js'
+
+type ResizePreview = {
+  sessionId: string
+  start: Date
+  end: Date
+}
 
 export default function TimelinePage() {
   const [selectedDate, setSelectedDate] = useState(new Date())
@@ -26,6 +33,7 @@ export default function TimelinePage() {
   const [showCalendarSuggestions, setShowCalendarSuggestions] = useState(true)
   const [editingSession, setEditingSession] = useState<Session | null>(null)
   const [isEditOpen, setIsEditOpen] = useState(false)
+  const [resizePreview, setResizePreview] = useState<ResizePreview | null>(null)
   const [editForm, setEditForm] = useState({
     title: "",
     start: "",
@@ -345,6 +353,93 @@ export default function TimelinePage() {
       }
     }
   }
+
+  const startSessionResize = (
+    event: ReactPointerEvent<HTMLButtonElement>,
+    session: Session,
+    edge: 'start' | 'end',
+    pixelsPerHour: number,
+  ) => {
+    if (!session.end || updateSession.isPending) return
+
+    event.preventDefault()
+    event.stopPropagation()
+
+    const handle = event.currentTarget
+    const pointerId = event.pointerId
+    const initialPointerY = event.clientY
+    const initialStart = new Date(session.start)
+    const initialEnd = new Date(session.end)
+    let nextStart = initialStart
+    let nextEnd = initialEnd
+
+    handle.setPointerCapture(pointerId)
+    setResizePreview({ sessionId: session._id, start: initialStart, end: initialEnd })
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      const resized = calculateResizedTimeRange({
+        start: initialStart,
+        end: initialEnd,
+        edge,
+        deltaPixels: moveEvent.clientY - initialPointerY,
+        pixelsPerHour,
+      })
+      nextStart = resized.start
+      nextEnd = resized.end
+
+      setResizePreview({ sessionId: session._id, start: nextStart, end: nextEnd })
+    }
+
+    const removePointerListeners = () => {
+      handle.removeEventListener('pointermove', handlePointerMove)
+      handle.removeEventListener('pointerup', handlePointerUp)
+      handle.removeEventListener('pointercancel', handlePointerCancel)
+      if (handle.hasPointerCapture(pointerId)) handle.releasePointerCapture(pointerId)
+    }
+
+    const handlePointerCancel = () => {
+      removePointerListeners()
+      setResizePreview(null)
+    }
+
+    const handlePointerUp = async () => {
+      removePointerListeners()
+
+      const startChanged = nextStart.getTime() !== initialStart.getTime()
+      const endChanged = nextEnd.getTime() !== initialEnd.getTime()
+      if (!startChanged && !endChanged) {
+        setResizePreview(null)
+        return
+      }
+
+      try {
+        await updateSession.mutateAsync({
+          id: session._id,
+          data: {
+            start: nextStart.toISOString(),
+            end: nextEnd.toISOString(),
+          },
+        })
+        posthog.capture('session_resized', {
+          session_id: session._id,
+          resize_edge: edge,
+          duration_minutes: Math.round((nextEnd.getTime() - nextStart.getTime()) / 60_000),
+        })
+      } catch (error: any) {
+        toast({
+          title: "Could not resize session",
+          description: error.message || "Your original session time was kept.",
+          variant: "destructive",
+        })
+      } finally {
+        setResizePreview(null)
+      }
+    }
+
+    handle.addEventListener('pointermove', handlePointerMove)
+    handle.addEventListener('pointerup', handlePointerUp)
+    handle.addEventListener('pointercancel', handlePointerCancel)
+  }
   
   // Color mappings for our palette
   const colorHex = {
@@ -404,6 +499,7 @@ export default function TimelinePage() {
               <div className="flex items-center gap-1 sm:gap-2">
                 <button
                   onClick={() => navigateDate('prev')}
+                  aria-label={viewMode === 'day' ? 'Previous day' : 'Previous week'}
                   className="w-7 h-7 sm:w-8 sm:h-8 bg-mango-dark text-white border-2 border-mango-dark shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[3px_3px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all flex items-center justify-center"
                 >
                   <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 stroke-[3]" />
@@ -421,6 +517,7 @@ export default function TimelinePage() {
                 
                 <button
                   onClick={() => navigateDate('next')}
+                  aria-label={viewMode === 'day' ? 'Next day' : 'Next week'}
                   className="w-7 h-7 sm:w-8 sm:h-8 bg-mango-dark text-white border-2 border-mango-dark shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[3px_3px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all flex items-center justify-center"
                 >
                   <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 stroke-[3]" />
@@ -601,8 +698,9 @@ export default function TimelinePage() {
                     <div className="relative">
                       {sessions.map((session) => {
                         const category = categoryMap.get(session.categoryId)
-                        const startTime = new Date(session.start)
-                        const endTime = session.end ? new Date(session.end) : new Date()
+                        const activeResize = resizePreview?.sessionId === session._id ? resizePreview : null
+                        const startTime = activeResize?.start || new Date(session.start)
+                        const endTime = activeResize?.end || (session.end ? new Date(session.end) : new Date())
                         
                         const startHour = startTime.getHours()
                         const startMinutes = startTime.getMinutes()
@@ -610,7 +708,9 @@ export default function TimelinePage() {
                         const topOffsetMobile = (startHour * 32) + (startMinutes / 60 * 32)
                         const topOffsetDesktop = (startHour * 48) + (startMinutes / 60 * 48)
                         
-                        const durationMinutes = session.durationMin || 0
+                        const durationMinutes = activeResize
+                          ? Math.round((endTime.getTime() - startTime.getTime()) / 60_000)
+                          : session.durationMin || 0
                         const heightMobile = Math.max((durationMinutes / 60) * 32, 16)
                         const heightDesktop = Math.max((durationMinutes / 60) * 48, 20)
                         
@@ -620,8 +720,9 @@ export default function TimelinePage() {
                         return (
                           <div
                             key={session._id}
+                            data-session-id={session._id}
                             onClick={() => openEditDialog(session)}
-                            className="absolute left-0 right-0 mx-0.5 sm:mx-1 border-2 border-mango-dark p-1.5 sm:p-3 cursor-pointer shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[4px_4px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all overflow-hidden z-20"
+                            className="group absolute left-0 right-0 mx-0.5 sm:mx-1 border-2 border-mango-dark px-1.5 py-0.5 sm:px-3 sm:py-1 cursor-pointer shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[4px_4px_0px_#1a1a1a] transition-shadow overflow-hidden z-20"
                             style={{
                               top: `var(--top-offset)`,
                               height: `var(--height)`,
@@ -639,13 +740,37 @@ export default function TimelinePage() {
                                 }
                               }
                             `}</style>
-                            <div data-session-id={session._id} className="hidden" />
-                            <div className="flex items-start justify-between text-[10px] sm:text-xs">
-                              <span className="text-white/80 font-bold">
+                            {session.end && (
+                              <>
+                                <button
+                                  type="button"
+                                  aria-label={`Resize the start of ${session.title}`}
+                                  onClick={(resizeEvent) => resizeEvent.stopPropagation()}
+                                  onPointerDown={(resizeEvent) => startSessionResize(resizeEvent, session, 'start', window.innerWidth >= 640 ? 48 : 32)}
+                                  className="absolute inset-x-0 top-0 z-30 h-2 cursor-ns-resize touch-none opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                >
+                                  <span className="absolute left-1/2 top-0.5 h-0.5 w-8 -translate-x-1/2 bg-white/80" />
+                                </button>
+                                <button
+                                  type="button"
+                                  aria-label={`Resize the end of ${session.title}`}
+                                  onClick={(resizeEvent) => resizeEvent.stopPropagation()}
+                                  onPointerDown={(resizeEvent) => startSessionResize(resizeEvent, session, 'end', window.innerWidth >= 640 ? 48 : 32)}
+                                  className="absolute inset-x-0 bottom-0 z-30 h-2 cursor-ns-resize touch-none opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                >
+                                  <span className="absolute bottom-0.5 left-1/2 h-0.5 w-8 -translate-x-1/2 bg-white/80" />
+                                </button>
+                              </>
+                            )}
+                            <div className="flex min-w-0 items-center gap-2 text-[10px] sm:text-xs leading-tight">
+                              <span className="shrink-0 text-white/80 font-bold">
                                 {format(startTime, 'HH:mm')} — {format(endTime, 'HH:mm')}
                               </span>
+                              <span className="min-w-0 flex-1 truncate font-bold text-xs sm:text-sm text-white">
+                                {session.title}
+                              </span>
                               {session.quality && (
-                                <div className="flex gap-0.5">
+                                <div className="hidden shrink-0 gap-0.5 sm:flex">
                                   {Array.from({ length: 5 }).map((_, i) => (
                                     <div
                                       key={i}
@@ -659,14 +784,11 @@ export default function TimelinePage() {
                                 </div>
                               )}
                             </div>
-                            <p className="font-bold text-xs sm:text-sm text-white mt-0.5 sm:mt-1 truncate">
-                              {session.title}
-                            </p>
-                            <p className="hidden sm:block text-xs text-white/70 font-bold truncate uppercase">
+                            <p className="hidden sm:block text-[10px] leading-tight text-white/70 font-bold truncate uppercase">
                               {category?.name}
                             </p>
                             {sessionNote && (
-                              <p className="hidden sm:block text-xs text-white/60 mt-1 italic line-clamp-2">
+                              <p className="hidden sm:block text-xs text-white/60 mt-0.5 italic line-clamp-2">
                                 "{sessionNote}"
                               </p>
                             )}
@@ -766,29 +888,49 @@ export default function TimelinePage() {
                             {daySessions.map((session) => {
                               const category = categoryMap.get(session.categoryId)
                               const color = category ? colorHex[category.color] : '#666'
-                              const startTime = new Date(session.start)
+                              const activeResize = resizePreview?.sessionId === session._id ? resizePreview : null
+                              const startTime = activeResize?.start || new Date(session.start)
+                              const endTime = activeResize?.end || (session.end ? new Date(session.end) : new Date())
                               const startHour = startTime.getHours()
                               const startMinutes = startTime.getMinutes()
                               const topOffset = (startHour * 32) + (startMinutes / 60 * 32)
-                              const durationMinutes = session.durationMin || 0
+                              const durationMinutes = activeResize
+                                ? Math.round((endTime.getTime() - startTime.getTime()) / 60_000)
+                                : session.durationMin || 0
                               const height = Math.max((durationMinutes / 60) * 32, 16)
                               
                               return (
                                 <div
                                   key={session._id}
                                   onClick={() => openEditDialog(session)}
-                                  className="absolute left-0.5 right-0.5 border border-mango-dark/50 cursor-pointer hover:shadow-md transition-shadow overflow-hidden pointer-events-auto z-20"
+                                  className="group absolute left-0.5 right-0.5 border border-mango-dark/50 cursor-pointer hover:shadow-md transition-shadow overflow-hidden pointer-events-auto z-20"
                                   style={{
                                     top: `${topOffset}px`,
                                     height: `${height}px`,
                                     backgroundColor: color,
                                   }}
                                 >
-                                  <div className="p-0.5 text-[8px] text-white font-bold leading-tight truncate">
-                                    {format(startTime, 'HH:mm')}
-                                  </div>
-                                  <div className="px-0.5 text-[8px] text-white/90 font-bold leading-tight truncate">
-                                    {session.title}
+                                  {session.end && (
+                                    <>
+                                      <button
+                                        type="button"
+                                        aria-label={`Resize the start of ${session.title}`}
+                                        onClick={(resizeEvent) => resizeEvent.stopPropagation()}
+                                        onPointerDown={(resizeEvent) => startSessionResize(resizeEvent, session, 'start', 32)}
+                                        className="absolute inset-x-0 top-0 z-30 h-2 cursor-ns-resize touch-none opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                      />
+                                      <button
+                                        type="button"
+                                        aria-label={`Resize the end of ${session.title}`}
+                                        onClick={(resizeEvent) => resizeEvent.stopPropagation()}
+                                        onPointerDown={(resizeEvent) => startSessionResize(resizeEvent, session, 'end', 32)}
+                                        className="absolute inset-x-0 bottom-0 z-30 h-2 cursor-ns-resize touch-none opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                      />
+                                    </>
+                                  )}
+                                  <div className="flex min-w-0 items-center gap-1 p-0.5 text-[8px] text-white font-bold leading-tight">
+                                    <span className="shrink-0">{format(startTime, 'HH:mm')}</span>
+                                    <span className="min-w-0 truncate text-white/90">{session.title}</span>
                                   </div>
                                   {category && height > 40 && (
                                     <div className="px-0.5 text-[7px] text-white/70 font-bold uppercase truncate">
