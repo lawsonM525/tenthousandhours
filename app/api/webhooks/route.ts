@@ -1,7 +1,7 @@
-console.log('webhooks file loaded')
 import { NextResponse } from "next/server"
 import type { WebhookEvent } from "@clerk/nextjs/server"
 import { getPostHogClient } from "@/lib/posthog-server"
+import { createUser, deleteUser } from "@/lib/actions/user.actions"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -38,11 +38,30 @@ export async function POST(req: Request) {
     return new Response("Verification error", { status: 400 })
   }
 
-  // optionally: lazy-import DB actions if they have side effects at import time
-  // User actions available if needed:
-  // const { createUser, updateUser, deleteUser } = await import("@/lib/actions/user.actions")
-
   const eventType = evt.type
+
+  if (eventType === "user.created" || eventType === "user.updated") {
+    const { id, email_addresses, primary_email_address_id, first_name, last_name, username, image_url } = evt.data
+    const primaryEmail = email_addresses?.find((email) => email.id === primary_email_address_id)
+      ?? email_addresses?.[0]
+
+    if (!primaryEmail?.email_address) {
+      return new Response("Clerk user has no email address", { status: 400 })
+    }
+
+    await createUser({
+      clerkId: id,
+      email: primaryEmail.email_address,
+      username,
+      firstName: first_name,
+      lastName: last_name,
+      photo: image_url,
+    })
+  }
+
+  if (eventType === "user.deleted" && evt.data.id) {
+    await deleteUser(evt.data.id)
+  }
 
   // Track user lifecycle events in PostHog
   if (eventType === "user.created") {
@@ -74,6 +93,5 @@ export async function POST(req: Request) {
     })
   }
 
-  // ...your existing eventType logic...
   return NextResponse.json({ ok: true })
 }

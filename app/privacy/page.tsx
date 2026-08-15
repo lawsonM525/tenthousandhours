@@ -38,6 +38,17 @@ export default function PrivacyPolicyPage() {
             </h2>
             <div className="mt-4 space-y-4">
               <div>
+                <h3 className="font-black text-lg text-mango-dark">Optional AI Inputs</h3>
+                <p className="text-slate-600 leading-relaxed">
+                  Premium beta users can request AI insights or use Daily Recall. AI insights send the
+                  selected period&apos;s session titles, categories, dates, times, and durations to Google&apos;s
+                  Gemini API. Titles originating from imported Google Calendar events are not included.
+                  Daily Recall sends the voice recording you choose to submit, the selected
+                  date and timezone, and your category names to Gemini so it can transcribe the recording
+                  and propose draft sessions.
+                </p>
+              </div>
+              <div>
                 <h3 className="font-black text-lg text-mango-dark">Google Calendar Data</h3>
                 <p className="text-slate-600 leading-relaxed">
                   If you choose to connect Google Calendar, we request read-only access to the list of
@@ -86,6 +97,32 @@ export default function PrivacyPolicyPage() {
                   browser and are not transmitted to our servers.
                 </p>
               </div>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-black uppercase text-mango-dark border-b-4 border-mango-yellow pb-2">
+              AI Features & Voice Recordings
+            </h2>
+            <div className="text-slate-600 leading-relaxed mt-4 space-y-4">
+              <p>
+                AI features are optional and only run when you explicitly request them. We use Google
+                Gemini to produce summaries and convert a Daily Recall recording into proposed sessions.
+                AI output may be inaccurate. Daily Recall proposals are drafts and are not added to your
+                timeline until you review and confirm them.
+              </p>
+              <p>
+                We do not save your raw voice recording to MongoDB or other application storage. It is held
+                temporarily in memory, sent once to Gemini, and discarded after processing. Confirmed
+                sessions are stored like sessions you create manually. Generated AI insights are cached in
+                your account so reopening the same period does not require another AI request.
+              </p>
+              <p>
+                Google processes submitted content under the applicable{" "}
+                <a href="https://ai.google.dev/gemini-api/terms" target="_blank" rel="noopener noreferrer" className="text-mango-red font-bold hover:underline">Gemini API terms</a>
+                . Data handling differs between unpaid and paid Gemini services, so avoid including sensitive,
+                confidential, medical, financial, or third-party information in AI requests.
+              </p>
             </div>
           </section>
 
@@ -161,6 +198,7 @@ export default function PrivacyPolicyPage() {
               <li><strong>PostHog</strong> - for product analytics</li>
               <li><strong>Vercel</strong> - for hosting and infrastructure</li>
               <li><strong>Google</strong> - only when you connect Google Calendar and authorize its OAuth services</li>
+              <li><strong>Google Gemini</strong> - when a premium beta user explicitly requests an AI insight or submits a Daily Recall recording</li>
             </ul>
             <p className="text-slate-600 leading-relaxed mt-4">
               These providers are bound by their own privacy policies and data protection agreements.
@@ -180,6 +218,7 @@ export default function PrivacyPolicyPage() {
               <li>Delete your account and all associated data</li>
               <li>Opt out of analytics tracking</li>
               <li>Disconnect Google Calendar at any time from Calendar Settings</li>
+              <li>Choose not to use optional AI features or submit voice recordings</li>
             </ul>
             <p className="text-slate-600 leading-relaxed mt-4">
               To exercise any of these rights, please contact us through our feedback portal or 

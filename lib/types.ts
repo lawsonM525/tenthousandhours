@@ -69,7 +69,15 @@ export interface User {
   email: string
   name: string
   tz: string
+  plan: 'free' | 'premium'
+  premiumBeta?: {
+    status: 'active' | 'revoked'
+    grantedAt?: Date
+    grantedBy?: string
+    expiresAt?: Date | null
+  }
   createdAt: Date
+  updatedAt?: Date
   settings: {
     rounding: 1 | 5 | 15
     weekStart: 0 | 1

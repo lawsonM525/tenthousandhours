@@ -77,6 +77,24 @@ export function useCreateSession() {
   })
 }
 
+export function useCreateSessions() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (sessions: z.infer<typeof createSessionSchema>[]) => {
+      const response = await fetch('/api/sessions/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessions }),
+      })
+      const body = await response.json()
+      if (!response.ok) throw new Error(body.error || 'Failed to create sessions')
+      return body as { insertedCount: number; sessionIds: string[] }
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sessions'] }),
+  })
+}
+
 // Update session
 export function useUpdateSession() {
   const queryClient = useQueryClient()

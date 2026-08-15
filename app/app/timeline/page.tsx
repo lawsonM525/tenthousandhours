@@ -20,6 +20,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { useGoogleCalendarEvents, useGoogleCalendarStatus } from "@/lib/hooks/use-google-calendar"
 import { calculateResizedTimeRange } from "@/lib/timeline-resize"
 import posthog from 'posthog-js'
+import { DailyRecall } from '@/components/daily-recall'
 
 type ResizePreview = {
   sessionId: string
@@ -568,8 +569,9 @@ export default function TimelinePage() {
             </div>
           </div>
 
-          {googleCalendarStatus?.connected && (
-            <div className="mt-3 flex justify-end">
+          <div className="mt-3 flex flex-wrap justify-end gap-2">
+            <DailyRecall selectedDate={selectedDate} categories={categories} />
+            {googleCalendarStatus?.connected && (
               <button
                 type="button"
                 onClick={toggleCalendarSuggestions}
@@ -585,8 +587,8 @@ export default function TimelinePage() {
                   : <EyeOff className="w-4 h-4" />}
                 Calendar suggestions: {showCalendarSuggestions ? 'shown' : 'hidden'}
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </header>
       

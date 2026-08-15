@@ -7,6 +7,7 @@ import { useSessions } from "@/lib/hooks/use-sessions"
 import { useCategories } from "@/lib/hooks/use-categories"
 import { Category } from "@/lib/types"
 import posthog from 'posthog-js'
+import { AiInsightCard } from '@/components/ai-insight-card'
 
 export default function InsightsPage() {
   const [selectedWeek, setSelectedWeek] = useState(new Date())
@@ -296,6 +297,9 @@ export default function InsightsPage() {
       </header>
       
       <div className="flex-1 overflow-auto p-6 pb-24 lg:pb-6">
+        <div className="max-w-6xl mx-auto mb-6">
+          <AiInsightCard />
+        </div>
         {weekLoading ? (
           <div className="text-center py-12">
             <p className="text-mango-dark font-bold">Loading insights...</p>

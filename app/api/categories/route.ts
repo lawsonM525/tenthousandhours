@@ -57,16 +57,13 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  console.log('Categories POST endpoint hit')
   try {
     const userId = await getAuthUserId(req)
-    console.log('User ID:', userId)
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const body = await req.json()
-    console.log('Request body:', body)
     
     // Validate request body
     const validatedData = createCategorySchema.parse(body)

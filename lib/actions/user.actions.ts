@@ -1,7 +1,7 @@
-import { ObjectId } from "mongodb"
 import { getDb } from "@/lib/db"
 import crypto from "crypto"
 import { Category, CategoryColor } from "@/lib/types"
+import { disconnectGoogleCalendar } from "@/lib/google-calendar"
 
 export type CreateUserParams = {
   clerkId: string
@@ -13,6 +13,7 @@ export type CreateUserParams = {
 }
 
 export type UpdateUserParams = {
+  email?: string
   firstName?: string | null
   lastName?: string | null
   username?: string | null
@@ -23,15 +24,12 @@ const COLLECTION = "users"
 
 export async function createUser(user: CreateUserParams) {
   const db = await getDb()
+  const existing = await db.collection(COLLECTION).findOne({ clerkId: user.clerkId })
+  const now = new Date()
   const base = {
     clerkId: user.clerkId,
-    email: user.email,
-    username: user.username ?? null,
-    firstName: user.firstName ?? null,
-    lastName: user.lastName ?? null,
-    photo: user.photo ?? null,
-    name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email,
-    tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    tz: "UTC",
+    plan: 'free' as const,
     settings: {
       rounding: 5,
       weekStart: 0,
@@ -39,28 +37,35 @@ export async function createUser(user: CreateUserParams) {
       notificationsEnabled: true,
       timeFormat: '12h' as const
     },
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: now,
   }
-  const res = await db.collection(COLLECTION).findOneAndUpdate(
+  const profile = {
+    email: user.email.toLowerCase(),
+    username: user.username ?? null,
+    firstName: user.firstName ?? null,
+    lastName: user.lastName ?? null,
+    photo: user.photo ?? null,
+    name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email,
+    updatedAt: now,
+  }
+  const savedUser = await db.collection(COLLECTION).findOneAndUpdate(
     { clerkId: base.clerkId },
-    { $setOnInsert: base },
+    { $set: profile, $setOnInsert: base },
     { upsert: true, returnDocument: "after" }
   )
   
-  // Create default categories for new users
-  if (res?.lastErrorObject?.upserted) {
-    const userId = res.value?._id?.toString()
-    if (userId) {
-      await createDefaultCategories(userId)
-    }
+  if (!existing) {
+    await createDefaultCategories(user.clerkId)
   }
   
-  return res?.value ?? null
+  return savedUser
 }
 
 async function createDefaultCategories(userId: string) {
   const db = await getDb()
+  const existingCategoryCount = await db.collection("categories").countDocuments({ userId })
+  if (existingCategoryCount > 0) return
+
   const now = new Date()
   
   const defaultCategories: Omit<Category, "_id">[] = [
@@ -144,18 +149,27 @@ export async function getUserById(clerkId: string) {
 
 export async function updateUser(clerkId: string, user: UpdateUserParams) {
   const db = await getDb()
-  const res = await db.collection(COLLECTION).findOneAndUpdate(
+  return db.collection(COLLECTION).findOneAndUpdate(
     { clerkId },
     { $set: { ...user, updatedAt: new Date() } },
     { returnDocument: "after" }
   )
-  return res?.value ?? null
 }
 
 export async function deleteUser(clerkId: string) {
   const db = await getDb()
-  const doc = await db.collection(COLLECTION).findOne({ clerkId })
-  if (!doc) return null
-  await db.collection(COLLECTION).deleteOne({ _id: new ObjectId(doc._id) })
-  return doc
+  const user = await db.collection(COLLECTION).findOne({ clerkId })
+  if (!user) return null
+
+  await disconnectGoogleCalendar(clerkId)
+  await Promise.all([
+    db.collection(COLLECTION).deleteOne({ clerkId }),
+    db.collection('categories').deleteMany({ userId: clerkId }),
+    db.collection('sessions').deleteMany({ userId: clerkId }),
+    db.collection('notes').deleteMany({ userId: clerkId }),
+    db.collection('summaries').deleteMany({ userId: clerkId }),
+    db.collection('ai_summaries').deleteMany({ userId: clerkId }),
+    db.collection('ai_usage').deleteMany({ userId: clerkId }),
+  ])
+  return user
 }

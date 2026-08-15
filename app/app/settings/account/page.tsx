@@ -1,4 +1,5 @@
 import { UserProfile } from "@clerk/nextjs"
+import { PremiumBetaCard } from "@/components/premium-beta-card"
 
 export default function AccountSettingsPage() {
   return (
@@ -13,6 +14,7 @@ export default function AccountSettingsPage() {
       </header>
       <div className="flex-1 overflow-auto p-6 pb-24 lg:pb-6">
         <div className="max-w-3xl mx-auto">
+          <PremiumBetaCard />
           <UserProfile 
             appearance={{
               elements: {

@@ -47,6 +47,10 @@ export const updateSessionSchema = z.object({
   tags: z.array(z.string()).optional(),
 })
 
+export const bulkCreateSessionsSchema = z.object({
+  sessions: z.array(createSessionSchema).min(1).max(20),
+})
+
 export const createNoteSchema = z.object({
   body: z.string().min(1, 'Note cannot be empty'),
   sessionIds: z.array(z.string()).default([]),
