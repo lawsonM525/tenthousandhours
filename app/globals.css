@@ -76,6 +76,77 @@
     box-shadow: 4px 4px 0 #000;
     position: relative;
   }
+
+  .app-shell {
+    color: #1a1a1a;
+  }
+
+  /* Authenticated app dark theme */
+  html.dark .app-shell.mango-pattern {
+    color: #e9edf1;
+    background-color: #0b0d10;
+    background-image: radial-gradient(circle at 10px 10px, rgba(46, 183, 229, 0.08) 2px, transparent 0);
+  }
+
+  html.dark .app-shell .bg-white,
+  html.dark .app-shell [class*="bg-white/"] {
+    background-color: #151a1f !important;
+  }
+
+  html.dark .app-shell .distressed-card {
+    background: #151a1f;
+    border-color: #e9edf1;
+    box-shadow: 4px 4px 0 #050607;
+  }
+
+  html.dark .app-shell .text-mango-dark {
+    color: #f4f7fa !important;
+  }
+
+  html.dark .app-shell [class*="text-mango-dark/"] {
+    color: rgba(233, 237, 241, 0.68) !important;
+  }
+
+  html.dark .app-shell .border-mango-dark {
+    border-color: #e9edf1 !important;
+  }
+
+  html.dark .app-shell [class*="border-mango-dark/"] {
+    border-color: rgba(233, 237, 241, 0.3) !important;
+  }
+
+  html.dark .app-shell .bg-slate-100,
+  html.dark .app-shell .bg-slate-200,
+  html.dark .app-shell .bg-slate-300 {
+    background-color: #1d232b !important;
+  }
+
+  html.dark .app-shell .text-slate-400,
+  html.dark .app-shell .text-slate-500,
+  html.dark .app-shell .text-slate-600 {
+    color: #b2bcc9 !important;
+  }
+
+  html.dark .app-shell input,
+  html.dark .app-shell textarea,
+  html.dark .app-shell select,
+  html.dark [role="dialog"] input,
+  html.dark [role="dialog"] textarea,
+  html.dark [role="dialog"] select {
+    color: #e9edf1;
+    background-color: #111418 !important;
+    color-scheme: dark;
+  }
+
+  html.dark [role="dialog"].bg-white,
+  html.dark [role="dialog"] .bg-white {
+    color: #e9edf1;
+    background-color: #151a1f !important;
+  }
+
+  html.dark [role="dialog"] .text-mango-dark {
+    color: #f4f7fa !important;
+  }
   
   .illustrated-border {
     border-image: linear-gradient(45deg, #FFB31A, #E62E2D, #FFD600) 1;

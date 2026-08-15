@@ -3,28 +3,37 @@
 import { useState, useEffect } from "react"
 import { Label } from "@/components/ui/label"
 import { Sun, Moon, Monitor, LayoutGrid, List } from "lucide-react"
+import { applyTheme } from "@/components/theme-controller"
+import { AppTheme, isAppTheme, THEME_STORAGE_KEY } from "@/lib/theme"
 
 export default function DisplaySettingsPage() {
-  const [theme, setTheme] = useState<"light" | "dark" | "system">("system")
+  const [theme, setTheme] = useState<AppTheme>("system")
   const [compactMode, setCompactMode] = useState(false)
   const [showSeconds, setShowSeconds] = useState(false)
   const [timelineView, setTimelineView] = useState<"blocks" | "list">("blocks")
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
-    const storedTheme = localStorage.getItem("settings_theme")
+    const storedTheme = localStorage.getItem(THEME_STORAGE_KEY)
     const storedCompactMode = localStorage.getItem("settings_compactMode")
     const storedShowSeconds = localStorage.getItem("settings_showSeconds")
     const storedTimelineView = localStorage.getItem("settings_timelineView")
     
-    if (storedTheme) setTheme(storedTheme as "light" | "dark" | "system")
+    if (isAppTheme(storedTheme)) setTheme(storedTheme)
     if (storedCompactMode) setCompactMode(storedCompactMode === "true")
     if (storedShowSeconds) setShowSeconds(storedShowSeconds === "true")
     if (storedTimelineView) setTimelineView(storedTimelineView as "blocks" | "list")
   }, [])
 
+  const selectTheme = (nextTheme: AppTheme) => {
+    setTheme(nextTheme)
+    localStorage.setItem(THEME_STORAGE_KEY, nextTheme)
+    applyTheme(nextTheme)
+  }
+
   const saveSettings = () => {
-    localStorage.setItem("settings_theme", theme)
+    localStorage.setItem(THEME_STORAGE_KEY, theme)
+    applyTheme(theme)
     localStorage.setItem("settings_compactMode", compactMode.toString())
     localStorage.setItem("settings_showSeconds", showSeconds.toString())
     localStorage.setItem("settings_timelineView", timelineView)
@@ -60,7 +69,8 @@ export default function DisplaySettingsPage() {
                 return (
                   <button
                     key={option.id}
-                    onClick={() => setTheme(option.id as "light" | "dark" | "system")}
+                    onClick={() => selectTheme(option.id as AppTheme)}
+                    aria-pressed={theme === option.id}
                     className={`p-4 border-2 border-mango-dark font-bold uppercase text-sm transition-all ${
                       theme === option.id
                         ? "bg-mango-dark text-white shadow-[3px_3px_0px_#FFB31A]"

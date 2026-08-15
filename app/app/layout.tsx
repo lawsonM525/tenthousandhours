@@ -12,6 +12,7 @@ import {
   MessageSquare 
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { ThemeController, themeBootstrapScript } from "@/components/theme-controller"
 
 const navigation = [
   { name: "Track", href: "/app/now", icon: Clock, color: "mango-red" },
@@ -29,7 +30,10 @@ export default function AppLayout({
   const pathname = usePathname()
 
   return (
-    <div className="h-screen flex flex-col lg:flex-row mango-pattern">
+    <>
+      <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
+      <ThemeController />
+      <div className="app-shell h-screen flex flex-col lg:flex-row mango-pattern">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex lg:flex-col lg:w-72 bg-white border-r-4 border-mango-dark">
         <div className="p-6 border-b-4 border-mango-dark">
@@ -114,6 +118,7 @@ export default function AppLayout({
           })}
         </div>
       </nav>
-    </div>
+      </div>
+    </>
   )
 }
