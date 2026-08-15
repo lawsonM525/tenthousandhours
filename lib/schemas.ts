@@ -32,6 +32,10 @@ export const createSessionSchema = z.object({
   quality: z.number().min(1).max(5).optional(),
   tags: z.array(z.string()).default([]),
   clientId: z.string().optional(),
+  sourceType: z.literal('google_calendar').optional(),
+  sourceProvider: z.literal('google').optional(),
+  sourceEventId: z.string().max(1024).optional(),
+  sourceCalendarId: z.string().max(1024).optional(),
 })
 
 export const updateSessionSchema = z.object({

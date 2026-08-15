@@ -27,6 +27,11 @@ export interface Session {
   quality?: number // 1-5
   tags: string[]
   noteId?: string
+  sourceType?: 'manual' | 'timer' | 'google_calendar'
+  sourceProvider?: 'google'
+  sourceEventId?: string
+  sourceCalendarId?: string
+  sourceSuggestionConfidence?: number
   createdAt: Date
   updatedAt: Date
 }
@@ -72,4 +77,41 @@ export interface User {
     notificationsEnabled: boolean
     timeFormat: '12h' | '24h'
   }
+}
+
+export interface GoogleCalendarConnection {
+  _id: string
+  userId: string
+  googleUserEmail?: string
+  googleUserName?: string
+  accessTokenEncrypted: string
+  refreshTokenEncrypted?: string
+  scope: string[]
+  tokenType?: string
+  expiryDate?: Date
+  selectedCalendarIds?: string[]
+  createdAt: Date
+  updatedAt: Date
+  lastSyncedAt?: Date
+}
+
+export interface GoogleCalendarSummary {
+  id: string
+  summary: string
+  primary?: boolean
+  accessRole?: string
+  backgroundColor?: string
+}
+
+export interface GoogleCalendarEvent {
+  id: string
+  status?: string
+  summary: string
+  description?: string
+  location?: string
+  calendarId: string
+  calendarSummary?: string
+  start: string
+  end: string
+  htmlLink?: string
 }

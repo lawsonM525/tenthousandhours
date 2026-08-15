@@ -17,7 +17,7 @@ export default function PrivacyPolicyPage() {
             <span className="font-bold text-xs uppercase text-white">Legal</span>
           </div>
           <h1 className="text-4xl font-black uppercase text-mango-dark mb-2">Privacy Policy</h1>
-          <p className="text-slate-500 font-bold">Last updated: January 26, 2026</p>
+          <p className="text-slate-500 font-bold">Last updated: August 15, 2026</p>
         </div>
 
         <div className="prose prose-slate max-w-none space-y-8">
@@ -37,6 +37,15 @@ export default function PrivacyPolicyPage() {
               Information We Collect
             </h2>
             <div className="mt-4 space-y-4">
+              <div>
+                <h3 className="font-black text-lg text-mango-dark">Google Calendar Data</h3>
+                <p className="text-slate-600 leading-relaxed">
+                  If you choose to connect Google Calendar, we request read-only access to the list of
+                  calendars you subscribe to and the events on calendars you select. This can include
+                  calendar names, event titles, start and end times, descriptions, and locations. Connecting
+                  Google Calendar is optional, and we never create, edit, or delete events in your calendar.
+                </p>
+              </div>
               <div>
                 <h3 className="font-black text-lg text-mango-dark">Account Information</h3>
                 <p className="text-slate-600 leading-relaxed">
@@ -91,7 +100,41 @@ export default function PrivacyPolicyPage() {
               <li>To authenticate your account and keep it secure</li>
               <li>To improve our product based on usage patterns</li>
               <li>To respond to support requests</li>
+              <li>To display Google Calendar events on your private timeline and let you optionally convert them into time logs</li>
             </ul>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-black uppercase text-mango-dark border-b-4 border-mango-yellow pb-2">
+              Google API Data
+            </h2>
+            <div className="text-slate-600 leading-relaxed mt-4 space-y-4">
+              <p>
+                Google Calendar data is used only to provide the calendar features you request. We do not
+                sell Google user data, use it for advertising, use it to train generalized AI models, or
+                allow humans to read it except when necessary for security, legal compliance, or support
+                that you explicitly request.
+              </p>
+              <p>
+                OAuth access and refresh tokens are encrypted before storage. Calendar events are retrieved
+                when you view your timeline and are not permanently copied into our database unless you
+                explicitly convert an event into a time log. When you disconnect Google Calendar, we revoke
+                the Google authorization when possible and delete the stored connection tokens. Time logs you
+                previously created remain part of your account until you delete them.
+              </p>
+              <p>
+                10,000 Hours&apos; use and transfer to any other app of information received from Google APIs
+                will adhere to the{" "}
+                <a
+                  href="https://developers.google.com/terms/api-services-user-data-policy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-mango-red font-bold hover:underline"
+                >
+                  Google API Services User Data Policy
+                </a>, including the Limited Use requirements.
+              </p>
+            </div>
           </section>
 
           <section>
@@ -117,6 +160,7 @@ export default function PrivacyPolicyPage() {
               <li><strong>MongoDB</strong> - for data storage</li>
               <li><strong>PostHog</strong> - for product analytics</li>
               <li><strong>Vercel</strong> - for hosting and infrastructure</li>
+              <li><strong>Google</strong> - only when you connect Google Calendar and authorize its OAuth services</li>
             </ul>
             <p className="text-slate-600 leading-relaxed mt-4">
               These providers are bound by their own privacy policies and data protection agreements.
@@ -135,6 +179,7 @@ export default function PrivacyPolicyPage() {
               <li>Export your session data</li>
               <li>Delete your account and all associated data</li>
               <li>Opt out of analytics tracking</li>
+              <li>Disconnect Google Calendar at any time from Calendar Settings</li>
             </ul>
             <p className="text-slate-600 leading-relaxed mt-4">
               To exercise any of these rights, please contact us through our feedback portal or 

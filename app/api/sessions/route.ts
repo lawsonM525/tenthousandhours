@@ -16,6 +16,7 @@ export async function GET(req: NextRequest) {
     }
 
     const db = await getDb()
+
     const searchParams = req.nextUrl.searchParams
     
     // Parse query params
@@ -78,6 +79,20 @@ export async function POST(req: NextRequest) {
     const validatedData = createSessionSchema.parse(body)
     
     const db = await getDb()
+
+    if (validatedData.sourceType === "google_calendar" && validatedData.sourceEventId) {
+      const existingSession = await db.collection<Session>("sessions").findOne({
+        userId,
+        sourceProvider: "google",
+        sourceEventId: validatedData.sourceEventId,
+      })
+      if (existingSession) {
+        return NextResponse.json(
+          { error: "This Google Calendar event is already logged" },
+          { status: 409 }
+        )
+      }
+    }
     
     // Check if category exists and belongs to user
     const category = await db.collection("categories").findOne({
@@ -103,6 +118,10 @@ export async function POST(req: NextRequest) {
       durationMin: 0,
       quality: validatedData.quality,
       tags: validatedData.tags,
+      sourceType: validatedData.sourceType,
+      sourceProvider: validatedData.sourceProvider,
+      sourceEventId: validatedData.sourceEventId,
+      sourceCalendarId: validatedData.sourceCalendarId,
       createdAt: now,
       updatedAt: now
     }

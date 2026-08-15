@@ -15,8 +15,9 @@ import {
 import { useSessions, useUpdateSession, useDeleteSession, useCreateSession } from "@/lib/hooks/use-sessions"
 import { useCategories } from "@/lib/hooks/use-categories"
 import { useNotes, useCreateNote } from "@/lib/hooks/use-notes"
-import { Session, Category } from "@/lib/types"
+import { Session, Category, GoogleCalendarEvent } from "@/lib/types"
 import { useToast } from "@/components/ui/use-toast"
+import { useGoogleCalendarEvents, useGoogleCalendarStatus } from "@/lib/hooks/use-google-calendar"
 import posthog from 'posthog-js'
 
 export default function TimelinePage() {
@@ -34,6 +35,7 @@ export default function TimelinePage() {
   
   // Add session state
   const [isAddOpen, setIsAddOpen] = useState(false)
+  const [selectedGoogleEvent, setSelectedGoogleEvent] = useState<GoogleCalendarEvent | null>(null)
   const [addForm, setAddForm] = useState({
     title: "",
     start: "",
@@ -58,6 +60,13 @@ export default function TimelinePage() {
   const dateRange = viewMode === 'day' 
     ? { start: startOfDay(selectedDate), end: endOfDay(selectedDate) }
     : { start: startOfWeek(selectedDate), end: endOfWeek(selectedDate) }
+
+  const { data: googleCalendarStatus } = useGoogleCalendarStatus()
+  const { data: googleCalendarEvents = [], isLoading: calendarEventsLoading } = useGoogleCalendarEvents({
+    timeMin: dateRange.start.toISOString(),
+    timeMax: dateRange.end.toISOString(),
+    enabled: googleCalendarStatus?.connected === true,
+  })
   
   const { data: sessions = [], isLoading: sessionsLoading } = useSessions({
     startDate: dateRange.start.toISOString(),
@@ -127,6 +136,18 @@ export default function TimelinePage() {
       end: format(now, "yyyy-MM-dd'T'HH:mm"),
       categoryId: categories[0]?._id || "",
     })
+    setSelectedGoogleEvent(null)
+    setIsAddOpen(true)
+  }
+
+  const openGoogleEventDialog = (event: GoogleCalendarEvent) => {
+    setSelectedGoogleEvent(event)
+    setAddForm({
+      title: event.summary,
+      start: format(new Date(event.start), "yyyy-MM-dd'T'HH:mm"),
+      end: format(new Date(event.end), "yyyy-MM-dd'T'HH:mm"),
+      categoryId: categories[0]?._id || "",
+    })
     setIsAddOpen(true)
   }
   
@@ -160,6 +181,12 @@ export default function TimelinePage() {
         start: startTime.toISOString(),
         end: endTime.toISOString(),
         tags: [],
+        ...(selectedGoogleEvent ? {
+          sourceType: 'google_calendar' as const,
+          sourceProvider: 'google' as const,
+          sourceEventId: selectedGoogleEvent.id,
+          sourceCalendarId: selectedGoogleEvent.calendarId,
+        } : {}),
       })
       
       posthog.capture('session_created_manual', {
@@ -174,6 +201,7 @@ export default function TimelinePage() {
       })
       
       setIsAddOpen(false)
+      setSelectedGoogleEvent(null)
     } catch (error: any) {
       toast({
         title: "Error",
@@ -418,11 +446,11 @@ export default function TimelinePage() {
       
       <div className="flex-1 overflow-auto p-6 pb-24 lg:pb-6">
         <div className="max-w-6xl mx-auto">
-          {sessionsLoading ? (
+          {sessionsLoading || calendarEventsLoading ? (
             <div className="text-center py-12">
               <p className="text-mango-dark font-bold">Loading timeline...</p>
             </div>
-          ) : sessions.length === 0 ? (
+          ) : sessions.length === 0 && googleCalendarEvents.length === 0 ? (
             <div className="max-w-md mx-auto text-center py-12">
               <div className="distressed-card p-8">
                 <h3 className="text-2xl font-black uppercase text-mango-dark mb-2">No Logs Yet</h3>
@@ -476,6 +504,51 @@ export default function TimelinePage() {
                       ))}
                     </div>
                     
+                    {/* Calendar event suggestions */}
+                    <div className="relative">
+                      {googleCalendarEvents.map((event) => {
+                        const eventDomId = event.id.replace(/[^a-zA-Z0-9_-]/g, '')
+                        const startTime = new Date(event.start)
+                        const endTime = new Date(event.end)
+                        const startHour = startTime.getHours()
+                        const startMinutes = startTime.getMinutes()
+                        const durationMinutes = Math.max((endTime.getTime() - startTime.getTime()) / 60000, 15)
+                        const topOffsetMobile = (startHour * 32) + (startMinutes / 60 * 32)
+                        const topOffsetDesktop = (startHour * 48) + (startMinutes / 60 * 48)
+                        const heightMobile = Math.max((durationMinutes / 60) * 32, 16)
+                        const heightDesktop = Math.max((durationMinutes / 60) * 48, 20)
+
+                        return (
+                          <button
+                            key={`${event.calendarId}-${event.id}`}
+                            data-calendar-event-id={eventDomId}
+                            onClick={() => openGoogleEventDialog(event)}
+                            className="absolute left-1 right-1 border-2 border-dashed border-blue-500 bg-blue-100/90 p-1.5 sm:p-2 text-left overflow-hidden hover:bg-blue-200 transition-colors z-10"
+                            style={{
+                              top: `var(--event-top-offset)`,
+                              height: `var(--event-height)`,
+                              // @ts-expect-error - CSS custom properties
+                              '--event-top-offset': `${topOffsetMobile}px`,
+                              '--event-height': `${heightMobile}px`,
+                            }}
+                          >
+                            <style>{`
+                              @media (min-width: 640px) {
+                                [data-calendar-event-id="${eventDomId}"] {
+                                  --event-top-offset: ${topOffsetDesktop}px !important;
+                                  --event-height: ${heightDesktop}px !important;
+                                }
+                              }
+                            `}</style>
+                            <span className="block text-[9px] sm:text-[10px] font-black uppercase text-blue-700 truncate">
+                              {format(startTime, 'HH:mm')} · {event.calendarSummary || 'Google Calendar'}
+                            </span>
+                            <span className="block text-xs font-bold text-blue-950 truncate">{event.summary}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+
                     {/* Session blocks */}
                     <div className="relative">
                       {sessions.map((session) => {
@@ -621,9 +694,27 @@ export default function TimelinePage() {
                       <div></div>
                       {eachDayOfInterval({ start: dateRange.start, end: dateRange.end }).map((day, _dayIndex) => {
                         const daySessions = sessions.filter(s => isSameDay(new Date(s.start), day))
+                        const dayCalendarEvents = googleCalendarEvents.filter(event => isSameDay(new Date(event.start), day))
                         
                         return (
                           <div key={day.toISOString()} className="relative">
+                            {dayCalendarEvents.map((event) => {
+                              const startTime = new Date(event.start)
+                              const endTime = new Date(event.end)
+                              const topOffset = (startTime.getHours() * 32) + (startTime.getMinutes() / 60 * 32)
+                              const durationMinutes = Math.max((endTime.getTime() - startTime.getTime()) / 60000, 15)
+                              const height = Math.max((durationMinutes / 60) * 32, 16)
+                              return (
+                                <button
+                                  key={`${event.calendarId}-${event.id}`}
+                                  onClick={() => openGoogleEventDialog(event)}
+                                  className="absolute left-0.5 right-0.5 border border-dashed border-blue-600 bg-blue-100/90 text-left overflow-hidden pointer-events-auto z-10"
+                                  style={{ top: `${topOffset}px`, height: `${height}px` }}
+                                >
+                                  <span className="block px-0.5 text-[8px] font-black text-blue-800 truncate">{format(startTime, 'HH:mm')} · {event.summary}</span>
+                                </button>
+                              )
+                            })}
                             {daySessions.map((session) => {
                               const category = categoryMap.get(session.categoryId)
                               const color = category ? colorHex[category.color] : '#666'
@@ -675,9 +766,13 @@ export default function TimelinePage() {
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
         <DialogContent className="bg-white border-4 border-mango-dark shadow-[8px_8px_0px_#1a1a1a]">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-black uppercase text-mango-dark">Log a Session</DialogTitle>
+            <DialogTitle className="text-2xl font-black uppercase text-mango-dark">
+              {selectedGoogleEvent ? "Log Calendar Event" : "Log a Session"}
+            </DialogTitle>
             <DialogDescription className="text-slate-500">
-              Manually add a past session to your timeline
+              {selectedGoogleEvent
+                ? `From ${selectedGoogleEvent.calendarSummary || "Google Calendar"}. Choose a category to count this time.`
+                : "Manually add a past session to your timeline"}
             </DialogDescription>
           </DialogHeader>
 
