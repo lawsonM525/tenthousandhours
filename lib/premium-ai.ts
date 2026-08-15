@@ -89,7 +89,7 @@ export function getGeminiClient() {
 }
 
 export function getGeminiModel() {
-  return process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite'
+  return process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite'
 }
 
 export function aiErrorResponse(error: unknown) {
