@@ -72,6 +72,19 @@ export default function TimelinePage() {
     startDate: dateRange.start.toISOString(),
     endDate: dateRange.end.toISOString()
   })
+
+  const visibleGoogleCalendarEvents = useMemo(() => {
+    const importedEventKeys = new Set(
+      sessions
+        .filter((session) => session.sourceProvider === 'google' && session.sourceEventId)
+        .map((session) => `${session.sourceCalendarId || ''}:${session.sourceEventId}`)
+    )
+
+    return googleCalendarEvents.filter((event) => (
+      !importedEventKeys.has(`${event.calendarId}:${event.id}`)
+      && !importedEventKeys.has(`:${event.id}`)
+    ))
+  }, [googleCalendarEvents, sessions])
   
   const { data: categories = [] } = useCategories()
   
@@ -450,7 +463,7 @@ export default function TimelinePage() {
             <div className="text-center py-12">
               <p className="text-mango-dark font-bold">Loading timeline...</p>
             </div>
-          ) : sessions.length === 0 && googleCalendarEvents.length === 0 ? (
+          ) : sessions.length === 0 && visibleGoogleCalendarEvents.length === 0 ? (
             <div className="max-w-md mx-auto text-center py-12">
               <div className="distressed-card p-8">
                 <h3 className="text-2xl font-black uppercase text-mango-dark mb-2">No Logs Yet</h3>
@@ -506,7 +519,7 @@ export default function TimelinePage() {
                     
                     {/* Calendar event suggestions */}
                     <div className="relative">
-                      {googleCalendarEvents.map((event) => {
+                      {visibleGoogleCalendarEvents.map((event) => {
                         const eventDomId = event.id.replace(/[^a-zA-Z0-9_-]/g, '')
                         const startTime = new Date(event.start)
                         const endTime = new Date(event.end)
@@ -572,7 +585,7 @@ export default function TimelinePage() {
                           <div
                             key={session._id}
                             onClick={() => openEditDialog(session)}
-                            className="absolute left-0 right-0 mx-0.5 sm:mx-1 border-2 border-mango-dark p-1.5 sm:p-3 cursor-pointer shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[4px_4px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all overflow-hidden"
+                            className="absolute left-0 right-0 mx-0.5 sm:mx-1 border-2 border-mango-dark p-1.5 sm:p-3 cursor-pointer shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[4px_4px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all overflow-hidden z-20"
                             style={{
                               top: `var(--top-offset)`,
                               height: `var(--height)`,
@@ -693,7 +706,7 @@ export default function TimelinePage() {
                       <div></div>
                       {eachDayOfInterval({ start: dateRange.start, end: dateRange.end }).map((day, _dayIndex) => {
                         const daySessions = sessions.filter(s => isSameDay(new Date(s.start), day))
-                        const dayCalendarEvents = googleCalendarEvents.filter(event => isSameDay(new Date(event.start), day))
+                        const dayCalendarEvents = visibleGoogleCalendarEvents.filter(event => isSameDay(new Date(event.start), day))
                         
                         return (
                           <div key={day.toISOString()} className="relative">
@@ -728,7 +741,7 @@ export default function TimelinePage() {
                                 <div
                                   key={session._id}
                                   onClick={() => openEditDialog(session)}
-                                  className="absolute left-0.5 right-0.5 border border-mango-dark/50 cursor-pointer hover:shadow-md transition-shadow overflow-hidden pointer-events-auto"
+                                  className="absolute left-0.5 right-0.5 border border-mango-dark/50 cursor-pointer hover:shadow-md transition-shadow overflow-hidden pointer-events-auto z-20"
                                   style={{
                                     top: `${topOffset}px`,
                                     height: `${height}px`,
