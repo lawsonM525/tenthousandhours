@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react"
 import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, addDays, isToday, isSameDay, eachDayOfInterval } from "date-fns"
-import { ChevronLeft, ChevronRight, Calendar, Trash2, Plus } from "lucide-react"
+import { ChevronLeft, ChevronRight, Calendar, Trash2, Plus, Eye, EyeOff } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -23,6 +23,7 @@ import posthog from 'posthog-js'
 export default function TimelinePage() {
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [viewMode, setViewMode] = useState<'day' | 'week'>('day')
+  const [showCalendarSuggestions, setShowCalendarSuggestions] = useState(true)
   const [editingSession, setEditingSession] = useState<Session | null>(null)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [editForm, setEditForm] = useState({
@@ -54,7 +55,20 @@ export default function TimelinePage() {
       view_mode: 'day',
       selected_date: new Date().toISOString(),
     })
+
+    const savedCalendarVisibility = localStorage.getItem('timeline_showCalendarSuggestions')
+    if (savedCalendarVisibility !== null) {
+      setShowCalendarSuggestions(savedCalendarVisibility === 'true')
+    }
   }, [])
+
+  const toggleCalendarSuggestions = () => {
+    setShowCalendarSuggestions((current) => {
+      const next = !current
+      localStorage.setItem('timeline_showCalendarSuggestions', String(next))
+      return next
+    })
+  }
   
   // Fetch sessions for the selected date range
   const dateRange = viewMode === 'day' 
@@ -65,7 +79,7 @@ export default function TimelinePage() {
   const { data: googleCalendarEvents = [], isLoading: calendarEventsLoading } = useGoogleCalendarEvents({
     timeMin: dateRange.start.toISOString(),
     timeMax: dateRange.end.toISOString(),
-    enabled: googleCalendarStatus?.connected === true,
+    enabled: googleCalendarStatus?.connected === true && showCalendarSuggestions,
   })
   
   const { data: sessions = [], isLoading: sessionsLoading } = useSessions({
@@ -74,6 +88,8 @@ export default function TimelinePage() {
   })
 
   const visibleGoogleCalendarEvents = useMemo(() => {
+    if (!showCalendarSuggestions) return []
+
     const importedEventKeys = new Set(
       sessions
         .filter((session) => session.sourceProvider === 'google' && session.sourceEventId)
@@ -84,7 +100,7 @@ export default function TimelinePage() {
       !importedEventKeys.has(`${event.calendarId}:${event.id}`)
       && !importedEventKeys.has(`:${event.id}`)
     ))
-  }, [googleCalendarEvents, sessions])
+  }, [googleCalendarEvents, sessions, showCalendarSuggestions])
   
   const { data: categories = [] } = useCategories()
   
@@ -454,6 +470,26 @@ export default function TimelinePage() {
               </button>
             </div>
           </div>
+
+          {googleCalendarStatus?.connected && (
+            <div className="mt-3 flex justify-end">
+              <button
+                type="button"
+                onClick={toggleCalendarSuggestions}
+                aria-pressed={showCalendarSuggestions}
+                className={`inline-flex items-center gap-2 px-3 py-1.5 border-2 border-mango-dark text-xs font-black uppercase transition-colors ${
+                  showCalendarSuggestions
+                    ? 'bg-blue-100 text-blue-900'
+                    : 'bg-white text-slate-500'
+                }`}
+              >
+                {showCalendarSuggestions
+                  ? <Eye className="w-4 h-4" />
+                  : <EyeOff className="w-4 h-4" />}
+                Calendar suggestions: {showCalendarSuggestions ? 'shown' : 'hidden'}
+              </button>
+            </div>
+          )}
         </div>
       </header>
       
