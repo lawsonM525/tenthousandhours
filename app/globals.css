@@ -115,6 +115,7 @@
     border-color: rgba(233, 237, 241, 0.3) !important;
   }
 
+  html.dark .app-shell .bg-slate-50,
   html.dark .app-shell .bg-slate-100,
   html.dark .app-shell .bg-slate-200,
   html.dark .app-shell .bg-slate-300 {
