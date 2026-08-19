@@ -151,7 +151,10 @@ export async function DELETE(
     // Check if category has active sessions
     const activeSessionsCount = await db.collection("sessions").countDocuments({
       userId,
-      categoryId: id
+      $or: [
+        { categoryId: id },
+        { secondaryCategoryIds: id },
+      ]
     })
     
     if (activeSessionsCount > 0) {

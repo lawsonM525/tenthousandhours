@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Session } from "@/lib/types"
-import { createSessionSchema, updateSessionSchema } from "@/lib/schemas"
+import { bulkCreateSessionsSchema, createSessionSchema, updateSessionSchema } from "@/lib/schemas"
 import { z } from "zod"
 
 // Fetch sessions
@@ -57,7 +57,7 @@ export function useCreateSession() {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: async (data: z.infer<typeof createSessionSchema>) => {
+    mutationFn: async (data: z.input<typeof createSessionSchema>) => {
       const response = await fetch("/api/sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -66,7 +66,7 @@ export function useCreateSession() {
       
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.message || "Failed to create session")
+        throw new Error(error.error || error.message || "Failed to create session")
       }
       
       return response.json() as Promise<Session>
@@ -81,15 +81,15 @@ export function useCreateSessions() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (sessions: z.infer<typeof createSessionSchema>[]) => {
+    mutationFn: async (data: z.input<typeof bulkCreateSessionsSchema>) => {
       const response = await fetch('/api/sessions/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessions }),
+        body: JSON.stringify(data),
       })
       const body = await response.json()
       if (!response.ok) throw new Error(body.error || 'Failed to create sessions')
-      return body as { insertedCount: number; sessionIds: string[] }
+      return body as { insertedCount: number; sessionIds: string[]; noteCount: number }
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sessions'] }),
   })
@@ -115,7 +115,7 @@ export function useUpdateSession() {
       
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.message || "Failed to update session")
+        throw new Error(error.error || error.message || "Failed to update session")
       }
       
       return response.json() as Promise<Session>

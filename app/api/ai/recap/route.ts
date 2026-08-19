@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 import { recapResultSchema } from "@/lib/ai-schemas"
-import { aiErrorResponse, getGeminiClient, getGeminiModel, requirePremiumAiUser, reserveAiUsage } from "@/lib/premium-ai"
+import { aiErrorResponse, getGeminiClient, getGeminiModel, requireAiUser, reserveAiUsage } from "@/lib/premium-ai"
 import { getDb } from "@/lib/db"
 import { Category } from "@/lib/types"
 
@@ -40,13 +40,17 @@ const responseJsonSchema = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId } = await requirePremiumAiUser(req)
+    const { userId } = await requireAiUser(req)
     const formData = await req.formData()
     const audio = formData.get('audio')
     const selectedDate = String(formData.get('selectedDate') || '')
     const timezone = String(formData.get('timezone') || 'UTC').slice(0, 100)
 
-    const audioMimeType = audio instanceof File ? audio.type.split(';')[0] : ''
+    const uploadedAudioType = audio instanceof File ? audio.type.split(';')[0] : ''
+    // Apple records M4A as audio/x-m4a. Gemini accepts the same container as audio/mp4.
+    const audioMimeType = ['audio/x-m4a', 'audio/m4a'].includes(uploadedAudioType)
+      ? 'audio/mp4'
+      : uploadedAudioType
     if (!(audio instanceof File) || !allowedAudioTypes.has(audioMimeType) || audio.size === 0 || audio.size > maxAudioBytes) {
       return NextResponse.json({ error: 'Please record an audio note under 4 MB' }, { status: 400 })
     }

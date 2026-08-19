@@ -3,7 +3,7 @@ import "server-only"
 import { GoogleGenAI } from "@google/genai"
 import { NextRequest } from "next/server"
 import { getAuthUserId } from "@/lib/auth-helper"
-import { getOrCreateCurrentUser, hasPremiumAccess } from "@/lib/current-user"
+import { getOrCreateCurrentUser } from "@/lib/current-user"
 import { getDb } from "@/lib/db"
 
 export type AiFeature = 'insight' | 'recap'
@@ -14,16 +14,12 @@ export class AiAccessError extends Error {
   }
 }
 
-export async function requirePremiumAiUser(req: NextRequest) {
+export async function requireAiUser(req: NextRequest) {
   const userId = await getAuthUserId(req)
   if (!userId) throw new AiAccessError('Unauthorized', 401)
 
   const user = await getOrCreateCurrentUser(userId)
   if (!user) throw new AiAccessError('Could not load your account', 500)
-  if (!hasPremiumAccess(user)) {
-    throw new AiAccessError('Premium beta access is required for AI features', 403)
-  }
-
   return { userId, user }
 }
 

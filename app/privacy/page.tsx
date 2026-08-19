@@ -17,7 +17,7 @@ export default function PrivacyPolicyPage() {
             <span className="font-bold text-xs uppercase text-white">Legal</span>
           </div>
           <h1 className="text-4xl font-black uppercase text-mango-dark mb-2">Privacy Policy</h1>
-          <p className="text-slate-500 font-bold">Last updated: August 15, 2026</p>
+          <p className="text-slate-500 font-bold">Last updated: August 17, 2026</p>
         </div>
 
         <div className="prose prose-slate max-w-none space-y-8">
@@ -40,7 +40,7 @@ export default function PrivacyPolicyPage() {
               <div>
                 <h3 className="font-black text-lg text-mango-dark">Optional AI Inputs</h3>
                 <p className="text-slate-600 leading-relaxed">
-                  Premium beta users can request AI insights or use Daily Recall. AI insights send the
+                  Signed-in users can request AI insights or use Daily Recall. AI insights send the
                   selected period&apos;s session titles, categories, dates, times, and durations to Google&apos;s
                   Gemini API. Titles originating from imported Google Calendar events are not included.
                   Daily Recall sends the voice recording you choose to submit, the selected
@@ -120,7 +120,10 @@ export default function PrivacyPolicyPage() {
               <p>
                 Google processes submitted content under the applicable{" "}
                 <a href="https://ai.google.dev/gemini-api/terms" target="_blank" rel="noopener noreferrer" className="text-mango-red font-bold hover:underline">Gemini API terms</a>
-                . Data handling differs between unpaid and paid Gemini services, so avoid including sensitive,
+                . With unpaid Gemini services, Google may use submitted content and generated responses to
+                improve its products, and human reviewers may process that content. With paid Gemini services,
+                Google states that prompts and responses are not used to improve its products, though limited
+                retention for safety and abuse prevention may still apply. Do not include sensitive,
                 confidential, medical, financial, or third-party information in AI requests.
               </p>
             </div>
@@ -198,7 +201,7 @@ export default function PrivacyPolicyPage() {
               <li><strong>PostHog</strong> - for product analytics</li>
               <li><strong>Vercel</strong> - for hosting and infrastructure</li>
               <li><strong>Google</strong> - only when you connect Google Calendar and authorize its OAuth services</li>
-              <li><strong>Google Gemini</strong> - when a premium beta user explicitly requests an AI insight or submits a Daily Recall recording</li>
+              <li><strong>Google Gemini</strong> - when a signed-in user explicitly requests an AI insight or submits a Daily Recall recording</li>
             </ul>
             <p className="text-slate-600 leading-relaxed mt-4">
               These providers are bound by their own privacy policies and data protection agreements.
@@ -216,7 +219,6 @@ export default function PrivacyPolicyPage() {
               <li>Access your personal data</li>
               <li>Export your session data</li>
               <li>Delete your account and all associated data</li>
-              <li>Opt out of analytics tracking</li>
               <li>Disconnect Google Calendar at any time from Calendar Settings</li>
               <li>Choose not to use optional AI features or submit voice recordings</li>
             </ul>

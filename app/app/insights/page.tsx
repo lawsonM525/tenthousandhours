@@ -116,9 +116,14 @@ export default function InsightsPage() {
     })
     
     // Calculate focus time (only mastery sessions)
-    const focusMinutes = weekSessions
-      .filter(s => categoryMap.get(s.categoryId)?.type !== 'other')
-      .reduce((sum, s) => sum + (s.durationMin || 0), 0)
+    const focusMinutes = weekSessions.reduce((sum, session) => {
+      const allocations = session.categoryAllocations?.length
+        ? session.categoryAllocations
+        : [{ categoryId: session.categoryId, minutes: session.durationMin || 0 }]
+      return sum + allocations.reduce((allocated, allocation) => (
+        categoryMap.get(allocation.categoryId)?.type !== 'other' ? allocated + allocation.minutes : allocated
+      ), 0)
+    }, 0)
     
     // Focus rate = focus hours / total hours
     const focusRate = totalMinutes > 0 ? Math.round((focusMinutes / totalMinutes) * 100) : 0
@@ -185,9 +190,12 @@ export default function InsightsPage() {
     const categoryMinutes = new Map<string, number>()
     
     weekSessions.forEach(session => {
-      const categoryId = session.categoryId
-      const minutes = session.durationMin || 0
-      categoryMinutes.set(categoryId, (categoryMinutes.get(categoryId) || 0) + minutes)
+      const allocations = session.categoryAllocations?.length
+        ? session.categoryAllocations
+        : [{ categoryId: session.categoryId, minutes: session.durationMin || 0 }]
+      allocations.forEach(({ categoryId, minutes }) => {
+        categoryMinutes.set(categoryId, (categoryMinutes.get(categoryId) || 0) + minutes)
+      })
     })
     
     const totalMinutes = stats.totalMinutes
@@ -298,7 +306,7 @@ export default function InsightsPage() {
       
       <div className="flex-1 overflow-auto p-6 pb-24 lg:pb-6">
         <div className="max-w-6xl mx-auto mb-6">
-          <AiInsightCard />
+          <AiInsightCard anchorDate={selectedWeek} />
         </div>
         {weekLoading ? (
           <div className="text-center py-12">
@@ -317,29 +325,29 @@ export default function InsightsPage() {
           <div className="max-w-6xl mx-auto grid grid-cols-12 gap-6">
             <div className="col-span-12 lg:col-span-7 space-y-6">
               {/* Streak & Quick Stats */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 {/* Streak */}
-                <div className="distressed-card p-4 flex items-center gap-3">
-                  <div className="w-10 h-10 bg-mango-orange flex items-center justify-center border-2 border-mango-dark">
+                <div className="distressed-card flex min-h-[104px] min-w-0 items-center gap-3 p-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center border-2 border-mango-dark bg-mango-orange">
                     <Flame className="w-5 h-5 text-white" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-[10px] uppercase font-black text-mango-orange tracking-wider">Streak</p>
-                    <p className="text-xl font-black text-mango-dark">{streak} days</p>
+                    <p className="text-xl font-black leading-tight text-mango-dark">{streak} days</p>
                   </div>
                 </div>
                 
                 {/* Sessions */}
-                <div className="distressed-card p-4 flex items-center gap-3">
-                  <div className="w-10 h-10 bg-mango-green flex items-center justify-center border-2 border-mango-dark">
+                <div className="distressed-card flex min-h-[104px] min-w-0 items-center gap-3 p-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center border-2 border-mango-dark bg-mango-green">
                     <CalendarIcon className="w-5 h-5 text-white" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-[10px] uppercase font-black text-mango-green tracking-wider">Sessions</p>
-                    <div className="flex items-center gap-2">
-                      <p className="text-xl font-black text-mango-dark">{stats.sessionCount}</p>
+                    <div className="flex min-w-0 items-baseline gap-2">
+                      <p className="shrink-0 text-xl font-black leading-tight text-mango-dark">{stats.sessionCount}</p>
                       {stats.sessionCountChange !== 0 && (
-                        <span className={`text-xs font-bold flex items-center ${stats.sessionCountChange > 0 ? 'text-mango-green' : 'text-mango-red'}`}>
+                        <span className={`flex min-w-0 items-center whitespace-nowrap text-[11px] font-bold ${stats.sessionCountChange > 0 ? 'text-mango-green' : 'text-mango-red'}`}>
                           {stats.sessionCountChange > 0 ? <TrendingUp className="w-3 h-3 mr-0.5" /> : <TrendingDown className="w-3 h-3 mr-0.5" />}
                           {Math.abs(stats.sessionCountChange)}%
                         </span>
@@ -350,26 +358,26 @@ export default function InsightsPage() {
                 
                 {/* Best Day */}
                 {stats.bestDay && (
-                  <div className="distressed-card p-4 flex items-center gap-3">
-                    <div className="w-10 h-10 bg-mango-yellow flex items-center justify-center border-2 border-mango-dark">
+                  <div className="distressed-card flex min-h-[104px] min-w-0 items-center gap-3 p-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center border-2 border-mango-dark bg-mango-yellow">
                       <Trophy className="w-5 h-5 text-mango-dark" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-[10px] uppercase font-black text-mango-dark tracking-wider">Best Day</p>
-                      <p className="text-sm font-black text-mango-dark">{format(stats.bestDay.date, 'EEE')}</p>
-                      <p className="text-xs text-slate-500 font-bold">{formatDuration(stats.bestDay.minutes)}</p>
+                      <p className="text-xl font-black leading-tight text-mango-dark">{format(stats.bestDay.date, 'EEE')}</p>
+                      <p className="whitespace-nowrap text-xs font-bold text-slate-500">{formatDuration(stats.bestDay.minutes)}</p>
                     </div>
                   </div>
                 )}
                 
                 {/* Avg Session */}
-                <div className="distressed-card p-4 flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#9373FF] flex items-center justify-center border-2 border-mango-dark">
+                <div className="distressed-card flex min-h-[104px] min-w-0 items-center gap-3 p-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center border-2 border-mango-dark bg-[#9373FF]">
                     <span className="text-white font-black text-sm">AVG</span>
                   </div>
-                  <div>
-                    <p className="text-[10px] uppercase font-black text-[#9373FF] tracking-wider">Per Session</p>
-                    <p className="text-xl font-black text-mango-dark">{formatDuration(stats.avgSessionLength)}</p>
+                  <div className="min-w-0">
+                    <p className="whitespace-nowrap text-[10px] font-black uppercase tracking-wider text-[#9373FF]">Avg Session</p>
+                    <p className="text-xl font-black leading-tight text-mango-dark">{formatDuration(stats.avgSessionLength)}</p>
                   </div>
                 </div>
               </div>
@@ -508,17 +516,25 @@ export default function InsightsPage() {
                 
                 {/* Mini Timeline */}
                 <div className="mt-6 grid grid-cols-[60px_1fr] gap-4">
-                  <div className="space-y-8 text-xs font-bold text-slate-500 uppercase">
+                  <div className="relative h-[336px] text-xs font-bold text-slate-500 uppercase">
                     {[9, 12, 15, 18, 21].map((hour) => (
-                      <div key={hour}>
+                      <div
+                        key={hour}
+                        className="absolute left-0 -translate-y-1/2 first:translate-y-0 last:-translate-y-full"
+                        style={{ top: `${((hour - 9) / 12) * 100}%` }}
+                      >
                         <span>{hour.toString().padStart(2, "0")}:00</span>
                       </div>
                     ))}
                   </div>
-                  <div className="relative">
-                    <div className="absolute inset-0 grid grid-rows-5 gap-y-2">
-                      {Array.from({ length: 5 }).map((_, index) => (
-                        <div key={index} className="border-b-2 border-mango-dark/10" />
+                  <div className="relative h-[336px] overflow-hidden">
+                    <div className="absolute inset-0">
+                      {[9, 12, 15, 18, 21].map((hour) => (
+                        <div
+                          key={hour}
+                          className="absolute inset-x-0 border-t-2 border-mango-dark/10"
+                          style={{ top: `${((hour - 9) / 12) * 100}%` }}
+                        />
                       ))}
                     </div>
                     
@@ -533,28 +549,27 @@ export default function InsightsPage() {
                         // Only show sessions between 9am and 9pm
                         if (startHour < 9 || startHour >= 21) return null
                         
-                        const topOffset = ((startHour - 9) * 40) + (startMinutes / 60 * 40)
-                        const height = Math.max((session.durationMin || 0) / 60 * 40, 20)
+                        const topOffset = ((startHour - 9) * 28) + (startMinutes / 60 * 28)
+                        const availableHeight = 336 - topOffset
+                        const height = Math.min(Math.max((session.durationMin || 0) / 60 * 28, 20), availableHeight)
                         const color = category ? colorHex[category.color as keyof typeof colorHex] : '#666'
                         
                         return (
                           <div
                             key={session._id}
-                            className="absolute left-0 right-0 mx-1 border-2 border-mango-dark p-2 text-xs shadow-[2px_2px_0px_#1a1a1a]"
+                            className="absolute left-0 right-0 mx-1 overflow-hidden border-2 border-mango-dark px-2 py-1 text-xs shadow-[2px_2px_0px_#1a1a1a]"
                             style={{
                               top: `${topOffset}px`,
                               height: `${height}px`,
                               backgroundColor: color,
                             }}
                           >
-                            <div className="flex items-center justify-between">
-                              <span className="text-white/80 font-bold">
+                            <div className="flex min-w-0 items-center gap-2">
+                              <span className="shrink-0 text-white/80 font-bold">
                                 {format(startTime, 'HH:mm')}
                               </span>
+                              <span className="min-w-0 truncate font-bold text-white">{session.title}</span>
                             </div>
-                            <p className="font-bold text-white truncate mt-1">
-                              {session.title}
-                            </p>
                           </div>
                         )
                       })}

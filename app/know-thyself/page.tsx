@@ -288,7 +288,7 @@ export default function KnowThyself() {
               <Image src="/logo.svg" alt="10,000 Hours" width={24} height={24} className="sm:w-8 sm:h-8" />
               <span className="font-bold text-base sm:text-xl uppercase italic">10,000HOURS</span>
             </div>
-            <p className="font-bold text-[10px] sm:text-xs uppercase tracking-widest text-slate-400 text-center md:text-left">© 2025. Built for those who chase mastery.</p>
+            <p className="font-bold text-[10px] sm:text-xs uppercase tracking-widest text-slate-400 text-center md:text-left">© 2025–2026. Built for those who chase mastery.</p>
           </div>
           <div className="flex flex-wrap justify-center gap-4 sm:gap-8 text-xs sm:text-sm font-black uppercase tracking-widest text-mango-dark">
             <Link className="hover:text-mango-red underline decoration-2 sm:decoration-4 decoration-mango-yellow" href="/">Home</Link>

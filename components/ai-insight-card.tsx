@@ -13,7 +13,7 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns"
-import { ChevronLeft, ChevronRight, Crown, Loader2, Sparkles } from "lucide-react"
+import { Brain, ChevronLeft, ChevronRight, Loader2, Sparkles } from "lucide-react"
 
 type Granularity = 'day' | 'week' | 'month'
 type AiInsight = {
@@ -23,20 +23,23 @@ type AiInsight = {
   nextStep: string
 }
 
-export function AiInsightCard() {
+type AiInsightCardProps = {
+  anchorDate: Date
+}
+
+export function AiInsightCard({ anchorDate }: AiInsightCardProps) {
   const [granularity, setGranularity] = useState<Granularity>('week')
-  const [referenceDate, setReferenceDate] = useState(new Date())
+  const [referenceDate, setReferenceDate] = useState(anchorDate)
   const [insight, setInsight] = useState<AiInsight | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [isPremium, setIsPremium] = useState<boolean | null>(null)
+  const anchorTime = anchorDate.getTime()
 
   useEffect(() => {
-    fetch('/api/account')
-      .then((response) => response.ok ? response.json() : Promise.reject(new Error('Could not load plan')))
-      .then((account) => setIsPremium(account.isPremium === true))
-      .catch(() => setIsPremium(false))
-  }, [])
+    setReferenceDate(new Date(anchorTime))
+    setInsight(null)
+    setError(null)
+  }, [anchorTime])
 
   const range = useMemo(() => {
     if (granularity === 'day') {
@@ -99,13 +102,13 @@ export function AiInsightCard() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center border-2 border-mango-dark bg-[#9373FF]">
-            <Sparkles className="h-6 w-6 text-white" />
+            <Brain className="h-6 w-6 text-white" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-black uppercase text-mango-dark">AI perspective</h2>
               <span className="inline-flex items-center gap-1 bg-mango-yellow px-2 py-0.5 text-[9px] font-black uppercase text-mango-dark">
-                <Crown className="h-3 w-3" /> Premium
+                <Sparkles className="h-3 w-3" /> AI beta
               </span>
             </div>
             <p className="mt-1 text-sm font-medium text-slate-500">A concise read on the time you actually tracked.</p>
@@ -135,17 +138,7 @@ export function AiInsightCard() {
         </button>
       </div>
 
-      {isPremium === false ? (
-        <div className="mt-5 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-          <p className="text-sm font-bold text-slate-600">AI insights are available to premium beta testers.</p>
-          <a
-            href="mailto:michelle@michellelawson.me?subject=10%2C000%20Hours%20Premium%20Beta"
-            className="border-2 border-mango-dark bg-mango-yellow px-4 py-2 text-xs font-black uppercase text-mango-dark shadow-[3px_3px_0px_#1a1a1a]"
-          >
-            Request beta access
-          </a>
-        </div>
-      ) : insight ? (
+      {insight ? (
         <div className="mt-5 space-y-4">
           <div>
             <p className="text-[10px] font-black uppercase tracking-widest text-[#9373FF]">The read</p>
@@ -172,11 +165,11 @@ export function AiInsightCard() {
           <button
             type="button"
             onClick={generateInsight}
-            disabled={isLoading || isPremium === null}
+            disabled={isLoading}
             className="inline-flex shrink-0 items-center gap-2 border-2 border-mango-dark bg-[#9373FF] px-4 py-2 text-xs font-black uppercase text-white shadow-[3px_3px_0px_#1a1a1a] disabled:opacity-60"
           >
-            {isLoading || isPremium === null ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-            {isLoading ? 'Reading your time…' : isPremium === null ? 'Checking access…' : 'Generate insight'}
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+            {isLoading ? 'Reading your time…' : 'Generate insight'}
           </button>
         </div>
       )}

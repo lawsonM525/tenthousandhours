@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 import { aiInsightSchema, insightRequestSchema } from "@/lib/ai-schemas"
-import { aiErrorResponse, getGeminiClient, getGeminiModel, requirePremiumAiUser, reserveAiUsage } from "@/lib/premium-ai"
+import { aiErrorResponse, getGeminiClient, getGeminiModel, requireAiUser, reserveAiUsage } from "@/lib/premium-ai"
 import { getDb } from "@/lib/db"
 import { Category, Session } from "@/lib/types"
 import { buildInsightPayload } from "@/lib/insight-payload"
@@ -23,7 +23,7 @@ const responseJsonSchema = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId } = await requirePremiumAiUser(req)
+    const { userId } = await requireAiUser(req)
     const input = insightRequestSchema.parse(await req.json())
     const startDate = new Date(input.startDate)
     const endDate = new Date(input.endDate)

@@ -36,7 +36,10 @@ export async function GET(req: NextRequest) {
     }
     
     if (categoryId) {
-      query.categoryId = categoryId
+      query.$or = [
+        { categoryId },
+        { secondaryCategoryIds: categoryId },
+      ]
     }
     
     // Fetch sessions
@@ -94,13 +97,15 @@ export async function POST(req: NextRequest) {
       }
     }
     
-    // Check if category exists and belongs to user
-    const category = await db.collection("categories").findOne({
-      _id: validatedData.categoryId as any,
-      userId: userId
-    })
+    // Check that every selected category exists and belongs to the user.
+    const selectedCategoryIds = [validatedData.categoryId, ...validatedData.secondaryCategoryIds]
+    const ownedCategories = await db.collection("categories").find({
+      _id: { $in: selectedCategoryIds as any[] },
+      userId,
+    }).toArray()
+    const category = ownedCategories.find((item) => item._id.toString() === validatedData.categoryId)
     
-    if (!category) {
+    if (!category || ownedCategories.length !== selectedCategoryIds.length) {
       return NextResponse.json(
         { error: "Category not found" },
         { status: 404 }
@@ -112,6 +117,8 @@ export async function POST(req: NextRequest) {
     const session: Omit<Session, "_id"> = {
       userId,
       categoryId: validatedData.categoryId,
+      secondaryCategoryIds: validatedData.secondaryCategoryIds,
+      categoryAllocations: validatedData.categoryAllocations,
       title: validatedData.title,
       start: new Date(validatedData.start),
       end: validatedData.end ? new Date(validatedData.end) : null,

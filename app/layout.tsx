@@ -12,7 +12,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: "10,000hours.com – know where your time goes. master what matters.",
+  title: "10,000 Hours — Track Your Time. Master What Matters.",
   description: "Log your whole day, see the truth, and pace your path to 10,000 hours.",
 }
 

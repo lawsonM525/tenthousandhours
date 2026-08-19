@@ -1,6 +1,12 @@
 "use client"
 
-import { useState, useMemo, useEffect, type PointerEvent as ReactPointerEvent } from "react"
+import {
+  useState,
+  useMemo,
+  useEffect,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+} from "react"
 import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, addDays, isToday, isSameDay, eachDayOfInterval } from "date-fns"
 import { ChevronLeft, ChevronRight, Calendar, Trash2, Plus, Eye, EyeOff } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -21,11 +27,22 @@ import { useGoogleCalendarEvents, useGoogleCalendarStatus } from "@/lib/hooks/us
 import { calculateResizedTimeRange } from "@/lib/timeline-resize"
 import posthog from 'posthog-js'
 import { DailyRecall } from '@/components/daily-recall'
+import { NewCategoryDialog } from '@/components/new-category-dialog'
 
 type ResizePreview = {
   sessionId: string
   start: Date
   end: Date
+}
+
+const splitMinutesEvenly = (categoryIds: string[], durationMinutes: number) => {
+  if (categoryIds.length < 2 || durationMinutes <= 0) return []
+  const base = Math.floor(durationMinutes / categoryIds.length)
+  const remainder = durationMinutes - base * categoryIds.length
+  return categoryIds.map((categoryId, index) => ({
+    categoryId,
+    minutes: base + (index === 0 ? remainder : 0),
+  }))
 }
 
 export default function TimelinePage() {
@@ -35,11 +52,14 @@ export default function TimelinePage() {
   const [editingSession, setEditingSession] = useState<Session | null>(null)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [resizePreview, setResizePreview] = useState<ResizePreview | null>(null)
+  const [newCategoryTarget, setNewCategoryTarget] = useState<'add' | 'edit' | null>(null)
   const [editForm, setEditForm] = useState({
     title: "",
     start: "",
     end: "",
     categoryId: "",
+    secondaryCategoryIds: [] as string[],
+    categoryAllocations: {} as Record<string, string>,
     note: "",
   })
   
@@ -51,11 +71,14 @@ export default function TimelinePage() {
     start: "",
     end: "",
     categoryId: "",
+    secondaryCategoryIds: [] as string[],
+    note: "",
   })
   
   const updateSession = useUpdateSession()
   const deleteSession = useDeleteSession()
   const createSession = useCreateSession()
+  const createNote = useCreateNote()
   const { toast } = useToast()
 
   // Track page view on mount
@@ -173,9 +196,56 @@ export default function TimelinePage() {
       start: format(oneHourAgo, "yyyy-MM-dd'T'HH:mm"),
       end: format(now, "yyyy-MM-dd'T'HH:mm"),
       categoryId: categories[0]?._id || "",
+      secondaryCategoryIds: [],
+      note: "",
     })
     setSelectedGoogleEvent(null)
     setIsAddOpen(true)
+  }
+
+  const openAddDialogAt = (start: Date) => {
+    const end = new Date(start.getTime() + 60 * 60 * 1000)
+    setAddForm({
+      title: "",
+      start: format(start, "yyyy-MM-dd'T'HH:mm"),
+      end: format(end, "yyyy-MM-dd'T'HH:mm"),
+      categoryId: categories[0]?._id || "",
+      secondaryCategoryIds: [],
+      note: "",
+    })
+    setSelectedGoogleEvent(null)
+    setIsAddOpen(true)
+  }
+
+  const openAddDialogAtHour = (day: Date, hour: number) => {
+    const start = new Date(day)
+    start.setHours(hour, 0, 0, 0)
+    openAddDialogAt(start)
+  }
+
+  const dateAtTimelinePosition = (day: Date, y: number, height: number) => {
+    const rawMinutes = (Math.max(0, Math.min(y, height)) / height) * 24 * 60
+    const snappedMinutes = Math.min(23 * 60 + 45, Math.floor(rawMinutes / 15) * 15)
+    const result = new Date(day)
+    result.setHours(Math.floor(snappedMinutes / 60), snappedMinutes % 60, 0, 0)
+    return result
+  }
+
+  const handleDayTimelineClick = (event: ReactMouseEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    openAddDialogAt(dateAtTimelinePosition(selectedDate, event.clientY - rect.top, rect.height))
+  }
+
+  const handleWeekTimelineClick = (event: ReactMouseEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    const x = event.clientX - rect.left
+    const hourLabelWidth = 50
+    if (x < hourLabelWidth) return
+
+    const dayWidth = (rect.width - hourLabelWidth) / 7
+    const dayIndex = Math.min(6, Math.floor((x - hourLabelWidth) / dayWidth))
+    const day = addDays(dateRange.start, dayIndex)
+    openAddDialogAt(dateAtTimelinePosition(day, event.clientY - rect.top, rect.height))
   }
 
   const openGoogleEventDialog = (event: GoogleCalendarEvent) => {
@@ -185,6 +255,8 @@ export default function TimelinePage() {
       start: format(new Date(event.start), "yyyy-MM-dd'T'HH:mm"),
       end: format(new Date(event.end), "yyyy-MM-dd'T'HH:mm"),
       categoryId: categories[0]?._id || "",
+      secondaryCategoryIds: [],
+      note: "",
     })
     setIsAddOpen(true)
   }
@@ -213,9 +285,16 @@ export default function TimelinePage() {
     }
     
     try {
-      await createSession.mutateAsync({
+      const selectedCategoryIds = [addForm.categoryId, ...addForm.secondaryCategoryIds]
+      const categoryAllocations = splitMinutesEvenly(
+        selectedCategoryIds,
+        Math.round((endTime.getTime() - startTime.getTime()) / 60_000),
+      )
+      const session = await createSession.mutateAsync({
         title: addForm.title,
         categoryId: addForm.categoryId,
+        secondaryCategoryIds: addForm.secondaryCategoryIds,
+        ...(categoryAllocations.length > 0 ? { categoryAllocations } : {}),
         start: startTime.toISOString(),
         end: endTime.toISOString(),
         tags: [],
@@ -226,11 +305,20 @@ export default function TimelinePage() {
           sourceCalendarId: selectedGoogleEvent.calendarId,
         } : {}),
       })
+
+      if (addForm.note.trim()) {
+        await createNote.mutateAsync({
+          body: addForm.note.trim(),
+          sessionIds: [session._id],
+          tags: [],
+        })
+      }
       
       posthog.capture('session_created_manual', {
         title: addForm.title,
         category_id: addForm.categoryId,
         duration_minutes: Math.round((endTime.getTime() - startTime.getTime()) / 60000),
+        note_added: addForm.note.trim().length > 0,
       })
       
       toast({
@@ -253,8 +341,6 @@ export default function TimelinePage() {
   const { data: sessionNotes = [] } = useNotes(
     editingSession ? { sessionId: editingSession._id } : undefined
   )
-  const createNote = useCreateNote()
-  
   // Open edit dialog for a session
   const openEditDialog = (session: Session) => {
     setEditingSession(session)
@@ -263,6 +349,14 @@ export default function TimelinePage() {
       start: format(new Date(session.start), "yyyy-MM-dd'T'HH:mm"),
       end: session.end ? format(new Date(session.end), "yyyy-MM-dd'T'HH:mm") : "",
       categoryId: session.categoryId,
+      secondaryCategoryIds: session.secondaryCategoryIds || [],
+      categoryAllocations: Object.fromEntries(
+        (
+          session.categoryAllocations?.length
+            ? session.categoryAllocations
+            : splitMinutesEvenly([session.categoryId, ...(session.secondaryCategoryIds || [])], session.durationMin)
+        ).map((allocation) => [allocation.categoryId, String(allocation.minutes)]),
+      ),
       note: "",
     })
     setIsEditOpen(true)
@@ -278,6 +372,26 @@ export default function TimelinePage() {
   // Handle session update
   const handleUpdateSession = async () => {
     if (!editingSession) return
+
+    const selectedCategoryIds = [editForm.categoryId, ...editForm.secondaryCategoryIds]
+    const hasAllocations = selectedCategoryIds.length > 1
+    const categoryAllocations = hasAllocations
+      ? selectedCategoryIds.map((categoryId) => ({ categoryId, minutes: Number(editForm.categoryAllocations[categoryId]) }))
+      : []
+    const durationMinutes = editForm.end
+      ? Math.round((new Date(editForm.end).getTime() - new Date(editForm.start).getTime()) / 60_000)
+      : 0
+    if (hasAllocations && (
+      categoryAllocations.some((allocation) => !Number.isInteger(allocation.minutes) || allocation.minutes <= 0)
+      || categoryAllocations.reduce((sum, allocation) => sum + allocation.minutes, 0) !== durationMinutes
+    )) {
+      toast({
+        title: "Split does not add up",
+        description: `Category minutes must total ${durationMinutes} minutes.`,
+        variant: "destructive",
+      })
+      return
+    }
     
     try {
       await updateSession.mutateAsync({
@@ -287,6 +401,8 @@ export default function TimelinePage() {
           start: new Date(editForm.start).toISOString(),
           end: editForm.end ? new Date(editForm.end).toISOString() : undefined,
           categoryId: editForm.categoryId,
+          secondaryCategoryIds: editForm.secondaryCategoryIds,
+          categoryAllocations,
         }
       })
       
@@ -598,15 +714,6 @@ export default function TimelinePage() {
             <div className="text-center py-12">
               <p className="text-mango-dark font-bold">Loading timeline...</p>
             </div>
-          ) : sessions.length === 0 && visibleGoogleCalendarEvents.length === 0 ? (
-            <div className="max-w-md mx-auto text-center py-12">
-              <div className="distressed-card p-8">
-                <h3 className="text-2xl font-black uppercase text-mango-dark mb-2">No Logs Yet</h3>
-                <p className="text-slate-500">
-                  Start a timer to begin tracking your focus time.
-                </p>
-              </div>
-            </div>
           ) : viewMode === 'day' ? (
             <div className="space-y-4">
               {/* Summary */}
@@ -632,22 +739,32 @@ export default function TimelinePage() {
               <div className="distressed-card p-3 sm:p-6">
                 <div className="grid grid-cols-[50px_1fr] sm:grid-cols-[80px_1fr] gap-2 sm:gap-6">
                   {/* Hour labels */}
-                  <div className="space-y-4 sm:space-y-6 text-[10px] sm:text-xs font-bold text-slate-500 uppercase">
+                  <div className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">
                     {Array.from({ length: 24 }).map((_, hour) => (
-                      <div key={hour} className="h-8 sm:h-12 flex items-center">
-                        <span>{hour.toString().padStart(2, '0')}:00</span>
-                      </div>
+                      <button
+                        type="button"
+                        key={hour}
+                        onClick={() => openAddDialogAtHour(selectedDate, hour)}
+                        className="h-8 sm:h-12 w-full flex items-start pt-0.5 text-left cursor-pointer transition-colors hover:text-mango-orange focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mango-orange"
+                        aria-label={`Add a session at ${hour.toString().padStart(2, '0')}:00`}
+                      >
+                        {hour.toString().padStart(2, '0')}:00
+                      </button>
                     ))}
                   </div>
                   
                   {/* Sessions */}
-                  <div className="relative">
+                  <div
+                    className="relative cursor-crosshair"
+                    onClick={handleDayTimelineClick}
+                    aria-label="Timeline. Click an empty time to add a session."
+                  >
                     {/* Hour grid lines */}
                     <div className="absolute inset-0">
                       {Array.from({ length: 24 }).map((_, hour) => (
                         <div 
                           key={hour} 
-                          className="h-8 sm:h-12 border-b-2 border-mango-dark/10"
+                          className="h-8 sm:h-12 border-t-2 border-mango-dark/10"
                         />
                       ))}
                     </div>
@@ -670,7 +787,10 @@ export default function TimelinePage() {
                           <button
                             key={`${event.calendarId}-${event.id}`}
                             data-calendar-event-id={eventDomId}
-                            onClick={() => openGoogleEventDialog(event)}
+                            onClick={(clickEvent) => {
+                              clickEvent.stopPropagation()
+                              openGoogleEventDialog(event)
+                            }}
                             className="absolute left-1 right-1 border border-dashed border-blue-500 bg-blue-100/90 px-1 py-0 sm:px-1.5 text-left overflow-hidden hover:bg-blue-200 transition-colors z-10"
                             style={{
                               top: `var(--event-top-offset)`,
@@ -723,7 +843,10 @@ export default function TimelinePage() {
                           <div
                             key={session._id}
                             data-session-id={session._id}
-                            onClick={() => openEditDialog(session)}
+                            onClick={(clickEvent) => {
+                              clickEvent.stopPropagation()
+                              openEditDialog(session)
+                            }}
                             className="group absolute left-0 right-0 mx-0.5 sm:mx-1 border-2 border-mango-dark px-1.5 py-0.5 sm:px-3 sm:py-1 cursor-pointer shadow-[2px_2px_0px_#1a1a1a] hover:shadow-[4px_4px_0px_#1a1a1a] transition-shadow overflow-hidden z-20"
                             style={{
                               top: `var(--top-offset)`,
@@ -787,7 +910,9 @@ export default function TimelinePage() {
                               )}
                             </div>
                             <p className="hidden sm:block text-[10px] leading-tight text-white/70 font-bold truncate uppercase">
-                              {category?.name}
+                              {[category?.name, ...(session.secondaryCategoryIds || []).map((id) => categoryMap.get(id)?.name)]
+                                .filter(Boolean)
+                                .join(' + ')}
                             </p>
                             {sessionNote && (
                               <p className="hidden sm:block text-xs text-white/60 mt-0.5 italic line-clamp-2">
@@ -843,18 +968,30 @@ export default function TimelinePage() {
                   </div>
                   
                   {/* Hour rows with session blocks */}
-                  <div className="relative">
+                  <div
+                    className="relative cursor-crosshair"
+                    onClick={handleWeekTimelineClick}
+                    aria-label="Weekly timeline. Click an empty time to add a session."
+                  >
                     <div className="grid grid-cols-[50px_repeat(7,1fr)] gap-0">
                       {/* Hour labels and grid */}
                       {Array.from({ length: 24 }).map((_, hour) => (
                         <div key={hour} className="contents">
-                          <div className="h-8 flex items-start justify-end pr-2 text-[10px] font-bold text-slate-400">
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation()
+                              openAddDialogAtHour(selectedDate, hour)
+                            }}
+                            className="h-8 flex items-start justify-end pr-2 text-[10px] font-bold text-slate-400 cursor-pointer transition-colors hover:text-mango-orange focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mango-orange"
+                            aria-label={`Add a session on ${format(selectedDate, 'EEEE, MMMM d')} at ${hour.toString().padStart(2, '0')}:00`}
+                          >
                             {hour.toString().padStart(2, '0')}:00
-                          </div>
+                          </button>
                           {eachDayOfInterval({ start: dateRange.start, end: dateRange.end }).map((day) => (
                             <div 
                               key={`${day.toISOString()}-${hour}`} 
-                              className="h-8 border-l border-b border-mango-dark/10 relative"
+                              className="h-8 border-l border-t border-mango-dark/10 relative"
                             />
                           ))}
                         </div>
@@ -879,7 +1016,10 @@ export default function TimelinePage() {
                               return (
                                 <button
                                   key={`${event.calendarId}-${event.id}`}
-                                  onClick={() => openGoogleEventDialog(event)}
+                                  onClick={(clickEvent) => {
+                                    clickEvent.stopPropagation()
+                                    openGoogleEventDialog(event)
+                                  }}
                                   className="absolute left-0.5 right-0.5 border border-dashed border-blue-600 bg-blue-100/90 text-left overflow-hidden pointer-events-auto z-10 leading-none"
                                   style={{ top: `${topOffset}px`, height: `${height}px` }}
                                 >
@@ -904,7 +1044,10 @@ export default function TimelinePage() {
                               return (
                                 <div
                                   key={session._id}
-                                  onClick={() => openEditDialog(session)}
+                                  onClick={(clickEvent) => {
+                                    clickEvent.stopPropagation()
+                                    openEditDialog(session)
+                                  }}
                                   className="group absolute left-0.5 right-0.5 border border-mango-dark/50 cursor-pointer hover:shadow-md transition-shadow overflow-hidden pointer-events-auto z-20"
                                   style={{
                                     top: `${topOffset}px`,
@@ -936,7 +1079,9 @@ export default function TimelinePage() {
                                   </div>
                                   {category && height > 40 && (
                                     <div className="px-0.5 text-[7px] text-white/70 font-bold uppercase truncate">
-                                      {category.name}
+                                      {[category.name, ...(session.secondaryCategoryIds || []).map((id) => categoryMap.get(id)?.name)]
+                                        .filter(Boolean)
+                                        .join(' + ')}
                                     </div>
                                   )}
                                 </div>
@@ -1004,15 +1149,24 @@ export default function TimelinePage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="font-bold uppercase text-sm text-mango-dark">Category</Label>
+              <Label className="font-bold uppercase text-sm text-mango-dark">Categories</Label>
+              <p className="text-xs text-slate-500">Select one or more. Time is split evenly when multiple are selected.</p>
               <div className="flex flex-wrap gap-2">
                 {categories.map((category) => {
-                  const isSelected = addForm.categoryId === category._id
+                  const selectedCategoryIds = [addForm.categoryId, ...addForm.secondaryCategoryIds].filter(Boolean)
+                  const isSelected = selectedCategoryIds.includes(category._id)
                   const color = colorHex[category.color as keyof typeof colorHex] || '#666'
                   return (
                     <button
+                      type="button"
                       key={category._id}
-                      onClick={() => setAddForm({ ...addForm, categoryId: category._id })}
+                      onClick={() => {
+                        if (isSelected && selectedCategoryIds.length === 1) return
+                        const nextIds = isSelected
+                          ? selectedCategoryIds.filter((id) => id !== category._id)
+                          : [...selectedCategoryIds, category._id]
+                        setAddForm({ ...addForm, categoryId: nextIds[0] || '', secondaryCategoryIds: nextIds.slice(1) })
+                      }}
                       className={`px-3 py-1.5 font-bold text-sm uppercase border-2 transition-all ${
                         isSelected 
                           ? 'border-mango-dark shadow-[2px_2px_0px_#1a1a1a] text-white' 
@@ -1027,16 +1181,36 @@ export default function TimelinePage() {
                     </button>
                   )
                 })}
+                <button
+                  type="button"
+                  onClick={() => setNewCategoryTarget('add')}
+                  className="inline-flex items-center gap-1 border-2 border-dashed border-mango-dark bg-white px-3 py-1.5 text-sm font-bold uppercase text-mango-dark transition-colors hover:bg-mango-yellow/20"
+                >
+                  <Plus className="h-4 w-4" /> New category
+                </button>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="add-note" className="font-bold uppercase text-sm text-mango-dark">Note (optional)</Label>
+              <textarea
+                id="add-note"
+                placeholder="What happened? Anything you want to remember?"
+                value={addForm.note}
+                onChange={(event) => setAddForm({ ...addForm, note: event.target.value })}
+                maxLength={5000}
+                rows={3}
+                className="w-full resize-y border-2 border-mango-dark bg-white px-3 py-2 text-sm font-medium text-mango-dark outline-none focus:ring-2 focus:ring-mango-orange"
+              />
             </div>
 
             <div className="flex gap-3 pt-4">
               <button 
                 onClick={handleCreateSession} 
-                disabled={!addForm.title.trim() || !addForm.categoryId || createSession.isPending}
+                disabled={!addForm.title.trim() || !addForm.categoryId || createSession.isPending || createNote.isPending}
                 className="flex-1 px-4 py-2 bg-mango-green text-white font-bold uppercase text-sm border-2 border-mango-dark shadow-[3px_3px_0px_#1a1a1a] hover:shadow-[4px_4px_0px_#1a1a1a] hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {createSession.isPending ? "Saving..." : "Log Session"}
+                {createSession.isPending || createNote.isPending ? "Saving..." : "Log Session"}
               </button>
               <button 
                 onClick={() => setIsAddOpen(false)}
@@ -1094,15 +1268,30 @@ export default function TimelinePage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="font-bold uppercase text-sm text-mango-dark">Category</Label>
+              <Label className="font-bold uppercase text-sm text-mango-dark">Categories</Label>
+              <p className="text-xs text-slate-500">Select one or more categories.</p>
               <div className="flex flex-wrap gap-2">
                 {categories.map((category) => {
-                  const isSelected = editForm.categoryId === category._id
+                  const selectedCategoryIds = [editForm.categoryId, ...editForm.secondaryCategoryIds].filter(Boolean)
+                  const isSelected = selectedCategoryIds.includes(category._id)
                   const color = colorHex[category.color as keyof typeof colorHex] || '#666'
                   return (
                     <button
+                      type="button"
                       key={category._id}
-                      onClick={() => setEditForm({ ...editForm, categoryId: category._id })}
+                      onClick={() => {
+                        if (isSelected && selectedCategoryIds.length === 1) return
+                        const nextIds = isSelected
+                          ? selectedCategoryIds.filter((id) => id !== category._id)
+                          : [...selectedCategoryIds, category._id]
+                        const duration = Math.round((new Date(editForm.end).getTime() - new Date(editForm.start).getTime()) / 60_000)
+                        setEditForm({
+                          ...editForm,
+                          categoryId: nextIds[0] || '',
+                          secondaryCategoryIds: nextIds.slice(1),
+                          categoryAllocations: Object.fromEntries(splitMinutesEvenly(nextIds, duration).map((allocation) => [allocation.categoryId, String(allocation.minutes)])),
+                        })
+                      }}
                       className={`px-3 py-1.5 font-bold text-sm uppercase border-2 transition-all ${
                         isSelected 
                           ? 'border-mango-dark shadow-[2px_2px_0px_#1a1a1a] text-white' 
@@ -1117,8 +1306,42 @@ export default function TimelinePage() {
                     </button>
                   )
                 })}
+                <button
+                  type="button"
+                  onClick={() => setNewCategoryTarget('edit')}
+                  className="inline-flex items-center gap-1 border-2 border-dashed border-mango-dark bg-white px-3 py-1.5 text-sm font-bold uppercase text-mango-dark transition-colors hover:bg-mango-yellow/20"
+                >
+                  <Plus className="h-4 w-4" /> New category
+                </button>
               </div>
             </div>
+
+            {editForm.secondaryCategoryIds.length > 0 && (
+              <div className="space-y-2 rounded border-2 border-mango-dark/20 p-3">
+                <Label className="font-bold uppercase text-sm text-mango-dark">Time split</Label>
+                <p className="text-xs text-slate-500">Adjusted evenly by default. Change the minutes if reality was messier.</p>
+                {Object.keys(editForm.categoryAllocations).length > 0 && (
+                  <div className="grid grid-cols-2 gap-2">
+                    {[editForm.categoryId, ...editForm.secondaryCategoryIds].map((categoryId) => (
+                      <label key={categoryId} className="text-xs font-bold text-mango-dark">
+                        {categoryMap.get(categoryId)?.name || 'Category'} minutes
+                        <Input
+                          type="number"
+                          min="1"
+                          step="1"
+                          value={editForm.categoryAllocations[categoryId] || ''}
+                          onChange={(event) => setEditForm({
+                            ...editForm,
+                            categoryAllocations: { ...editForm.categoryAllocations, [categoryId]: event.target.value },
+                          })}
+                          className="mt-1 border-2 border-mango-dark bg-white"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="edit-note" className="font-bold uppercase text-sm text-mango-dark">Note (optional)</Label>
@@ -1151,6 +1374,29 @@ export default function TimelinePage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <NewCategoryDialog
+        open={newCategoryTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setNewCategoryTarget(null)
+        }}
+        onCreated={(category) => {
+          if (newCategoryTarget === 'edit') {
+            setEditForm((form) => ({
+              ...form,
+              categoryId: category._id,
+              secondaryCategoryIds: [],
+              categoryAllocations: {},
+            }))
+          } else {
+            setAddForm((form) => ({
+              ...form,
+              categoryId: category._id,
+              secondaryCategoryIds: [],
+            }))
+          }
+        }}
+      />
     </div>
   )
 }

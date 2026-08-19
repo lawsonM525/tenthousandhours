@@ -20,6 +20,8 @@ export interface Session {
   _id: string
   userId: string
   categoryId: string
+  secondaryCategoryIds?: string[]
+  categoryAllocations?: { categoryId: string; minutes: number }[]
   title: string
   start: Date
   end: Date | null
